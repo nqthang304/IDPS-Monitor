@@ -12,7 +12,7 @@ export class TcpService {
   static async sendCommandToCProgram(command: string): Promise<string> {
     if (!this.IS_PRODUCTION) {
       logger.info('HARDWARE_DRIVER', `[Fake] Sending command to C: ${command}$DONE$1$`);
-      await new Promise(resolve => setTimeout(resolve, 10000)); 
+      await new Promise(resolve => setTimeout(resolve, 2000)); 
       const response = command + '$OK$';
       logger.success('HARDWARE_DRIVER', `[Fake] mainC response: ${response}`);
       return response;

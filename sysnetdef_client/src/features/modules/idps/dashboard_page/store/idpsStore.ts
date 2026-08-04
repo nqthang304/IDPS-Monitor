@@ -56,8 +56,7 @@ export const useIdpsStore = create<IdpsState>()(
             setStatus: (active, mode) => set({ isActive: active, mode }),
 
             updateIdpsData: (data) => set((state) => {
-                if (!data || !data.onsec) return state;
-                // console.log('[IDPS Store][updateIdpsData][onsec]', data.onsec);
+                if (!state.isActive || !data || !data.onsec) return state;
                 const newPoint = { ...data.onsec, time: data.serverTimestamp || Date.now() };
                 const updatedHistory = [...state.onsecHistory.slice(1), newPoint];
 
@@ -70,16 +69,12 @@ export const useIdpsStore = create<IdpsState>()(
 
             // 2. CẬP NHẬT updateLogs ĐỂ GẮN ID
             updateLogs: (newLogs) => set((state) => {
-                // console.log('[IDPS Store][updateLogs][incoming]', newLogs);
+                if (!state.isActive || !newLogs || newLogs.length === 0) return state;
                 const logsWithId = newLogs.map(log => ({
                     ...log,
                     _id: generateId() // Gắn key cố định
                 }));
                 const mergedLogs = [...logsWithId, ...state.logs].slice(0, 100);
-                // console.log('[IDPS Store][updateLogs][size]', {
-                //     incoming: newLogs.length,
-                //     merged: mergedLogs.length,
-                // });
                 return { logs: mergedLogs };
             }),
 

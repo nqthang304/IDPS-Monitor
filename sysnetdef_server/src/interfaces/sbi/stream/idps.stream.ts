@@ -3,6 +3,7 @@ import net from "net";
 import { Server } from "socket.io";
 import { logger } from "@/shared/utils/logger.utils";
 import { ENV } from "@/core/config/env";
+import { SystemConfigRepository } from "#/database/repository/systemConfig.repository";
 
 // --- 1. INTERFACES ---
 
@@ -162,9 +163,44 @@ export function idpsCapture(io: Server) {
     });
   } else {
     logger.info('IDPS_STREAMING', 'Đang chạy ở chế độ MOCK DATA (Gồm PPS và Total Packages)');
+
+    const systemConfigRepository = new SystemConfigRepository();
+    let isIdpsActive = true;
+    let idpsMode = 'IPS';
+
+    // Kiểm tra trạng thái và Chế độ IDPS từ CSDL định kỳ 1 giây
+    setInterval(async () => {
+      try {
+        const [statusConfig, modeConfig] = await Promise.all([
+          systemConfigRepository.findByKey('IDPS_STATUS'),
+          systemConfigRepository.findByKey('IDPS_MODE'),
+        ]);
+        isIdpsActive = statusConfig ? statusConfig.value === 'ON' : true;
+        idpsMode = modeConfig ? modeConfig.value.toUpperCase() : 'IPS';
+      } catch (e) {
+        // Giữ nguyên trạng thái nếu lỗi
+      }
+    }, 1000);
+
     setInterval(() => {
-      const actions: IDPSPacket["action"][] = ["Normal", "Alert", "Drop"];
       const protocols: IDPSPacket["protocol"][] = ["TCP", "UDP", "ICMP"];
+
+      // Chỉ đẩy dữ liệu Malware khi IDPS đang ON và ở chế độ IPS (IDS mode KHÔNG phát hiện malware)
+      const isMalware: 0 | 1 = (isIdpsActive && idpsMode === 'IPS' && Math.random() > 0.85) ? 1 : 0;
+      let action: IDPSPacket["action"] = "Normal";
+
+      if (isIdpsActive) {
+        if (isMalware === 1) {
+          action = Math.random() > 0.5 ? "Drop" : "Alert";
+        } else {
+          // Ở chế độ IDS: chỉ có Normal và Alert, không có Drop
+          const normalActions: IDPSPacket["action"][] = idpsMode === 'IDS' ? ["Normal", "Alert"] : ["Normal", "Alert", "Drop"];
+          action = normalActions[Math.floor(Math.random() * normalActions.length)];
+        }
+      } else {
+        // Khi IDPS OFF: không phát hiện Malware và toàn bộ hành động là Normal
+        action = "Normal";
+      }
 
       const mockPacket: IDPSPacket = {
         timestamp: new Date().toLocaleTimeString("en-GB"),
@@ -172,12 +208,11 @@ export function idpsCapture(io: Server) {
         dstIP: "10.0.0.1",
         srcPort: Math.floor(Math.random() * 60000),
         dstPort: 443,
-        action: actions[Math.floor(Math.random() * actions.length)],
-        ruleType: "Signature_Match",
-        severity: Math.floor(Math.random() * 3),
+        action,
+        ruleType: isMalware === 1 ? "Malware_Signature" : "Signature_Match",
+        severity: isMalware === 1 ? Math.floor(Math.random() * 2) + 2 : Math.floor(Math.random() * 3),
         protocol: protocols[Math.floor(Math.random() * protocols.length)],
-        isMalware: Math.random() > 0.9 ? 1 : 0,
-        // Giả lập số lượng gói tin ngẫu nhiên mỗi entry để tính PPS
+        isMalware,
         packetCount: Math.floor(Math.random() * 50) + 1,
         packetSize: Math.floor(Math.random() * 1500) + 64,
       };
