@@ -15,6 +15,7 @@ import IdpsActiveRule from '@/features/modules/idps/dashboard_page/components/id
 
 // Import Store quản lý Lock mới
 import { useLockStore } from '@/system/stores/useLockStore';
+import { useIdpsStore } from '@/features/modules/idps/dashboard_page/store/idpsStore';
 
 const IdpsDashboard: React.FC = () => {
   const [loading, isLoading] = useState(false);
@@ -33,10 +34,10 @@ const IdpsDashboard: React.FC = () => {
     try {
       const res = await idpsApi.getIdpsStatus();
       console.log("IDPS Status Response:", res);
-      setIdpsData({ 
-        active: res.data?.active ?? false, 
-        mode: res.data?.mode ?? 'ids' 
-      });
+      const active = res.data?.active ?? false;
+      const mode = res.data?.mode ?? 'ids';
+      setIdpsData({ active, mode });
+      useIdpsStore.getState().setStatus(active, mode);
       setRefreshKey(Date.now());
     } catch (error) {
       console.error("Lỗi lấy status:", error);
@@ -45,20 +46,9 @@ const IdpsDashboard: React.FC = () => {
     }
   };
 
-  // const fetchActiveRuleCount = async () => {
-  //   try {
-  //     const res = await idpsApi.getIdpsActiveRuleCount();
-  //     console.log("IDPS Active Rule Count Response:", res);
-  //     setActiveRuleCount(res.count);
-  //   } catch (error) {
-  //     console.error("Lỗi lấy active rule count:", error);
-  //   }
-  // };
-
   useEffect(() => {
     const handleForceRefresh = () => {
       fetchStatus();
-      // fetchActiveRuleCount();
     };
 
     window.addEventListener('FORCE_REFRESH_DATA', handleForceRefresh);
@@ -70,21 +60,15 @@ const IdpsDashboard: React.FC = () => {
   }, []);
 
   const handleIdpsUpdate = async (active: boolean, mode: string) => {
-    // 1. Chặn ngay từ UI nếu đang khóa (Interceptor axios cũng chặn, nhưng chặn ở đây giúp tiết kiệm 1 luồng gọi)
     if (useLockStore.getState().isLocked) return;
 
+    // Cập nhật ngay vào store
+    useIdpsStore.getState().setStatus(active, mode as IdpsMode);
+
     try {
-      // 2. Gọi API. 
-      // Nếu là 202 (Đang xử lý) hoặc 200 (Thành công), sự kiện API_NOTIFY đã được bắn ra từ axiosClient 
-      // và NotificationHandler sẽ tự động hiện thông báo tương ứng.
       await idpsApi.updateIdpsStatus({ active, mode: mode as IdpsMode });
-      
-      // Đồng bộ lại UI (đảm bảo hiển thị đúng trạng thái)
       fetchStatus();
     } catch (error: any) {
-      // 3. Nếu là lỗi 503, 400, 500,... axiosClient đã ném Promise.reject 
-      // và bắn sự kiện API_NOTIFY báo lỗi. Bạn không cần tự viết notification.error() nữa.
-      // Chỉ cần fetch lại dữ liệu gốc để Switch button hoặc các trạng thái trả về như cũ
       fetchStatus();
     }
   };

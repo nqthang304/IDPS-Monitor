@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
 //loaders
-import { protected_loader, public_loader } from "@/application/loader/auth.loader";
+import { protected_loader, public_loader, admin_protected_loader } from "@/application/loader/auth.loader";
 import { idpsRulesLoader } from "@/features/modules/idps/services/loader/idpsGetRules.loader";
 
 //pages
@@ -15,6 +15,8 @@ import IdpsAnalyze from "@/application/pages/idps/idpsAnalyze/idpsAnalyze";
 
 // management
 import Logs from "@/application/pages/management/logsManagement/logs";
+import Users from "@/application/pages/management/usersManagement/users";
+import Profile from "@/application/pages/profile/profile";
 
 
 export const router = createBrowserRouter([
@@ -55,9 +57,10 @@ export const router = createBrowserRouter([
                 element: <IdpsAnalyze />
             },
 
-            // 6. Management
+            // 6. Management (Chỉ Admin mới có quyền truy cập)
             {
                 path: "management",
+                loader: admin_protected_loader,
                 children: [
                     {
                         index: true,
@@ -65,19 +68,21 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "logs",
-                        element: <Logs />
+                        element: <Logs />,
+                        loader: admin_protected_loader
                     },
                     {
                         path: "users",
-                        element: <div>Nội dung trang list user</div>
+                        element: <Users />,
+                        loader: admin_protected_loader
                     }
                 ]
             },
 
             // 7. CÁC TRANG ĐỘC LẬP (Không nằm trong SubMenu)
             {
-                path: "profile", // URL: /user
-                element: <div>Nội dung trang quản lý profile</div>
+                path: "profile",
+                element: <Profile />
             }
         ]
     }

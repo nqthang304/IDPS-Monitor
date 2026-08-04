@@ -11,11 +11,14 @@ import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { initializeData } from "#/core/database/data.init";
 
 import authRoutes from "#/interfaces/nbi/http/auth.route";
+import userRoutes from "#/interfaces/nbi/http/user.route";
 import idpsRoutes from "#/interfaces/nbi/http/idpsRules.route";
 import deviceStorageRoutes from "#/interfaces/nbi/http/deviceStorage.route";
+import auditLogRoutes from "#/interfaces/nbi/http/auditLog.route";
 
 import { notificationWS } from "#/interfaces/nbi/ws/notification.ws";
 import { idpsCapture } from "#/interfaces/sbi/stream/idps.stream";
+import { auditLogCleanerService } from "#/modules/common/logs/auditLogCleaner.service";
 
 import { logger } from "@/shared/utils/logger.utils";
 
@@ -59,14 +62,40 @@ export const createApp = () => {
     logger.warn("APP", `Created missing database directory: ${dbDir}`);
   }
 
+  // 1. Tự động khởi tạo cấu trúc Bảng & Seed Data trước
+  initializeData();
+
+  // 2. Chạy Drizzle migration nếu tìm thấy thư mục migration
   try {
-    const migrationsFolder = path.resolve(process.cwd(), "drizzle");
-    migrate(db, { migrationsFolder });
-    initializeData();
-    logger.success("APP", "Migration and Initialization completed.");
+    let migrationsFolder = path.resolve(__dirname, "../drizzle");
+    if (!fs.existsSync(migrationsFolder)) {
+      migrationsFolder = path.resolve(__dirname, "../../drizzle");
+    }
+    if (!fs.existsSync(migrationsFolder)) {
+      migrationsFolder = path.resolve(process.cwd(), "sysnetdef_server/drizzle");
+    }
+    if (!fs.existsSync(migrationsFolder)) {
+      migrationsFolder = path.resolve(process.cwd(), "../sysnetdef_server/drizzle");
+    }
+    if (!fs.existsSync(migrationsFolder)) {
+      migrationsFolder = path.resolve(process.cwd(), "drizzle");
+    }
+
+    if (fs.existsSync(migrationsFolder)) {
+      migrate(db, { migrationsFolder });
+      logger.success("APP", "Migration and Initialization completed.");
+    }
   } catch (error: any) {
-    if (!error.message.includes("no statements")) {
-      logger.error("APP", `Setup failed: ${error.message}`);
+    const msg = error?.message || "";
+    const isIgnorable =
+      msg.includes("no statements") ||
+      msg.includes("already exists") ||
+      msg.includes("Failed to run the query 'CREATE TABLE") ||
+      msg.includes("table `users` already exists") ||
+      msg.includes("table `rules` already exists");
+
+    if (!isIgnorable) {
+      logger.warn("APP", `Migration check note: ${msg}`);
     }
   }
 
@@ -80,11 +109,20 @@ export const createApp = () => {
   } catch (error: any) {
     logger.error("APP", `Failed to start SBI Stream service: ${error.message}`);
   }
+  // Audit Logs Auto Cleaner Service
+  try {
+    auditLogCleanerService.startAutoCleanCron();
+  } catch (error: any) {
+    logger.error("APP", `Failed to start Audit Logs Auto Cleaner: ${error.message}`);
+  }
 
   // --- ROUTES ---
   app.use("/api/auth", authRoutes);
+  app.use("/api/users", userRoutes);
+  app.use("/api/user", userRoutes);
   app.use("/api/idps", idpsRoutes);
   app.use("/api/device-storage", deviceStorageRoutes);
+  app.use("/api/audit-logs", auditLogRoutes);
 
   app.get("/ping", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });

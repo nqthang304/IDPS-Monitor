@@ -9,7 +9,7 @@ export const authApi = {
     return res.data;
   },
 
-  verifyToken: async (): Promise<ApiResponse<boolean>> => {
+  verifyToken: async (): Promise<ApiResponse<any>> => {
     // Không cần truyền token vào tham số nữa, interceptor đã lo
     const res = await axiosClient.get("/auth/verify");
     return res.data;

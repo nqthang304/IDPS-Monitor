@@ -7,8 +7,8 @@ export const users = sqliteTable('users', {
   email: text('email').notNull().unique(),
   username: text('username').notNull().unique(),
   password: text('password').notNull(),
-  role: text('role').notNull().default('admin'),
+  role: text('role').notNull().default('user'),
   notify: text('notify'),
   lastLogin: text('last_login'),
-  createTime: text('create_time').default(sql`(CURRENT_TIMESTAMP)`),
+  createTime: text('create_time').default(sql`(datetime('now', '+7 hours'))`),
 });

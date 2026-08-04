@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'; 
 import { Button, Space, Flex, Modal } from 'antd';
-import { PlusOutlined, FileTextOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import styles from './idpsRulesManagement.module.css';
 
 import { useLoaderData } from 'react-router-dom';
@@ -9,7 +9,6 @@ import type { FilterValue, SorterResult, TablePaginationConfig } from 'antd/es/t
 import PageTitle from '@/application/layout/pageTitle/pageTitle';
 import RulesTable from '@/features/modules/idps/rulesManagement_page/rulesTable/rulesTable';
 import RuleFormModal from '@/features/modules/idps/rulesManagement_page/ruleFormModal/ruleFormModal';
-import ImportRuleFileModal from '@/features/modules/idps/rulesManagement_page/importRuleFileModal/importRuleFileModal';
 
 import { idpsApi } from '@/features/modules/idps/services/api/idps.api';
 import type { IdpsRule } from '@/features/types/idps.type';
@@ -29,7 +28,6 @@ const IdpsRulesManagement: React.FC = () => {
     const [isRuleModalOpen, setIsRuleModalOpen] = useState<boolean>(false);
     const [selectedRule, setSelectedRule] = useState<IdpsRule | null>(null);
 
-    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
     
     const [isAllPagesSelected, setIsAllPagesSelected] = useState<boolean>(false);
@@ -264,13 +262,6 @@ const IdpsRulesManagement: React.FC = () => {
         } catch (error) {}
     };
 
-    const handleImportSubmit = async (file: File) => {
-        try {
-            await idpsApi.importIdpsRules(file);
-            setIsImportModalOpen(false);
-        } catch (error) {}
-    };
-
     const handleCustomLimit = (newLimit: number) => {
         fetchRules(1, newLimit, currentFilters);
     };
@@ -285,9 +276,6 @@ const IdpsRulesManagement: React.FC = () => {
                 <div className={styles.actionArea}>
                     <div className={styles.actionBtn}>
                         <Space size="middle">
-                            <Button type="primary" icon={<FileTextOutlined />} onClick={() => setIsImportModalOpen(true)} className={styles.btnImport}>
-                                Import rules file
-                            </Button>
                             <Button type="primary" icon={<PlusOutlined />} onClick={handleAddClick} className={styles.btnAddManual}>
                                 Add manual rule
                             </Button>
@@ -325,7 +313,6 @@ const IdpsRulesManagement: React.FC = () => {
                 />
             </div>
             <RuleFormModal open={isRuleModalOpen} onClose={() => setIsRuleModalOpen(false)} initialData={selectedRule} onSubmit={handleFormSubmit} />
-            <ImportRuleFileModal open={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} onImport={handleImportSubmit} />
         </div>
     );
 };

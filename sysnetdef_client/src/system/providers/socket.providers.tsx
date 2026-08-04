@@ -51,13 +51,20 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     // BỘ ĐIỀU TIẾT TRUNG TÂM (THROTTLING LOOP) - CHẠY ĐÚNG 1 GIÂY/LẦN
     // ====================================================================
     const throttleInterval = setInterval(() => {
-      // Xử lý dữ liệu IDPS
-      if (latestIdpsTrafficRef.current) {
-        useIdpsStore.getState().updateIdpsData(latestIdpsTrafficRef.current);
+      const isActive = useIdpsStore.getState().isActive;
+      // Chỉ cập nhật dữ liệu khi IDPS ở trạng thái ON
+      if (isActive) {
+        if (latestIdpsTrafficRef.current) {
+          useIdpsStore.getState().updateIdpsData(latestIdpsTrafficRef.current);
+          latestIdpsTrafficRef.current = null;
+        }
+        if (latestIdpsPacketRef.current) {
+          useIdpsStore.getState().updateLogs(latestIdpsPacketRef.current);
+          latestIdpsPacketRef.current = null;
+        }
+      } else {
+        // Khi IDPS OFF: hủy bỏ các bản tin socket chờ sẵn
         latestIdpsTrafficRef.current = null;
-      }
-      if (latestIdpsPacketRef.current) {
-        useIdpsStore.getState().updateLogs(latestIdpsPacketRef.current);
         latestIdpsPacketRef.current = null;
       }
     }, 1000);

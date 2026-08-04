@@ -1,7 +1,7 @@
 import axiosClient from "@/config/api/axiosClient";
 import type { 
     IdpsStatusResponse, IdpsUpdatePayload, IdpsActiveRuleCount, 
-    IdpsRule, IRulesWithPagination, BulkImportResponse, AnalyzeTrafficResponse 
+    IdpsRule, IRulesWithPagination, AnalyzeTrafficResponse 
 } from "@/features/types/idps.type";
 import type { ApiResponse } from "@/features/types";
 import { logger } from "@/utils/logger.utils";
@@ -43,10 +43,10 @@ export const idpsApi = {
             });
 
             logger.success('IDPS', 'Analyze data fetched successfully');
-            return response.data; // 👈 Bóc lớp vỏ Axios ở đây
+            return response.data;
         } catch (error: any) {
             logger.error('IDPS', `Error fetching analyze data: ${error.message || 'Network Error'}`);
-            throw error.response?.data || { message: "Không thể kết nối máy chủ để phân tích dữ liệu" };
+            throw error.response?.data || { message: "Unable to connect to server for data analysis" };
         }
     },
 
@@ -58,11 +58,10 @@ export const idpsApi = {
             return response.data;
         } catch (error: any) {
             logger.error('IDPS', `Error fetching IDPS Status: ${error.message || 'Unknown Error'}`);
-            // Trả về mock data an toàn bọc trong ApiResponse
             return { 
                 success: false, 
                 status: 500, 
-                message: "Lấy trạng thái thất bại", 
+                message: "Failed to retrieve status", 
                 data: { active: false, mode: 'ids' } 
             };
         }
@@ -77,7 +76,7 @@ export const idpsApi = {
             return response.data;
         } catch (error: any) {
             logger.error('IDPS', `Failed to update IDPS Status: ${error.message || 'Unknown Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống khi cập nhật trạng thái hệ thống IDPS" };
+            throw error.response?.data || { message: "System error while updating IDPS system status" };
         }
     },
 
@@ -127,14 +126,12 @@ export const idpsApi = {
 
             logger.debug('IDPS', `Fetching rules list (Page: ${queryParams.page}, Limit: ${queryParams.limit})`);
 
-            // Vì cấu trúc rules đặc biệt cần nhào nặn lại, ta vẫn để kiểu Generic nới lỏng ở Axios
             const response = await axiosClient.get<any>("/idps/", {
                 params: queryParams,
             });
             console.debug('IDPS', `Raw response received for rules list:`, response);
-            const backendData = response.data; // Đây là cục data do backend trả về
+            const backendData = response.data;
 
-            // Check mảng rules từ backend trả về (thích ứng theo việc backend gói data thế nào)
             const rawRules = Array.isArray(backendData?.data) ? backendData.data : (Array.isArray(backendData) ? backendData : []);
 
             const mappedRules: IdpsRule[] = rawRules.map((item: any) => ({
@@ -153,7 +150,6 @@ export const idpsApi = {
 
             logger.debug('IDPS', `Successfully mapped ${mappedRules.length} rules from response`);
             
-            // Ép cấu trúc trả về chuẩn ApiResponse<IRulesWithPagination>
             return {
                 status: response.status, 
                 success: backendData?.success ?? true,
@@ -165,7 +161,7 @@ export const idpsApi = {
             };
         } catch (error: any) {
             logger.error('IDPS', `Error fetching rules list: ${error.message || 'System Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống" };
+            throw error.response?.data || { message: "System error" };
         }
     },
 
@@ -178,7 +174,7 @@ export const idpsApi = {
             return response.data;
         } catch (error: any) {
             logger.error('IDPS', `Failed to create rule: ${error.message || 'System Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống" };
+            throw error.response?.data || { message: "System error" };
         }
     },
 
@@ -191,7 +187,7 @@ export const idpsApi = {
             return response.data;
         } catch (error: any) {
             logger.error('IDPS', `Failed to delete rule ${ruleId}: ${error.message || 'System Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống khi xóa rule" };
+            throw error.response?.data || { message: "System error while deleting rule" };
         }
     },
 
@@ -206,25 +202,10 @@ export const idpsApi = {
             return response.data;
         } catch (error: any) {
             logger.error('IDPS', `Failed to execute bulk delete: ${error.message || 'System Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống khi xóa hàng loạt" };
+            throw error.response?.data || { message: "System error while executing bulk delete" };
         }
     },
 
-    importIdpsRules: async (file: File): Promise<BulkImportResponse> => {
-        try {
-            logger.info('IDPS', `Initiating bulk import for file: ${file.name}`);
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const response = await axiosClient.post<BulkImportResponse>("/idps/bulk-import", formData);
-
-            logger.success('IDPS', `Bulk import completed successfully for file: ${file.name}`);
-            return response.data;
-        } catch (error: any) {
-            logger.error('IDPS', `Bulk import failed: ${error.message || 'Unknown Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống khi import hàng loạt" };
-        }
-    },
 
     updateStatusRules: async (ids: number[], status: boolean): Promise<ApiResponse> => {
         try {
@@ -238,7 +219,7 @@ export const idpsApi = {
             return response.data;
         } catch (error: any) {
             logger.error('IDPS', `Failed to execute bulk status update: ${error.message || 'System Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống khi cập nhật trạng thái hàng loạt" };
+            throw error.response?.data || { message: "System error while executing bulk status update" };
         }
     },
 
@@ -251,7 +232,7 @@ export const idpsApi = {
             return response.data;
         } catch (error: any) {
             logger.error('IDPS', `Failed to update rule ${ruleId}: ${error.message || 'System Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống khi cập nhật rule" };
+            throw error.response?.data || { message: "System error while updating rule" };
         }
     },
 };

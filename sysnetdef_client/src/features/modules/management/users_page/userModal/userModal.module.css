@@ -1,0 +1,17 @@
+.addUserModal .notificationSettings {
+  margin-bottom: 16px;
+}
+
+.addUserModal :global(.ant-collapse-header) {
+  padding: 0;
+}
+
+.addUserModal :global(.ant-collapse-content-box) {
+  padding-block: 0;
+  padding: 0;
+}
+
+.addUserModal :global(.ant-collapse-content-box) :global(.ant-form-item) {
+  margin-bottom: 0;
+  padding: 5px 0px;
+}

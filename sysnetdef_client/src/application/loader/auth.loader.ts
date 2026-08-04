@@ -27,21 +27,54 @@ export const protected_loader = async () => {
   }
 
   try {
-    // 2. Gọi API verify: Không cần truyền token vào tham số
-    // axiosClient sẽ tự động lấy token từ localStorage và gắn vào Header
+    // 2. Gọi API verify
     const response = await authApi.verifyToken();
 
-    if (response.success) {
-      // Trả về dữ liệu user hoặc true để route tiếp tục render
+    if (response.success && response.data) {
+      if (response.data.role) {
+        localStorage.setItem('user_role', response.data.role);
+      }
       return response.data;
     } else {
-      // Nếu backend báo token không hợp lệ/hết hạn
       localStorage.removeItem('access_token');
+      localStorage.removeItem('user_role');
       return redirect('/login');
     }
   } catch (error) {
-    // 3. Xử lý lỗi kết nối hoặc lỗi server (500, 404, v.v.)
     localStorage.removeItem('access_token');
+    localStorage.removeItem('user_role');
+    return redirect('/login');
+  }
+};
+
+// Chặn người dùng không có quyền Admin vào các trang quản trị (Management/Logs/Users)
+export const admin_protected_loader = async () => {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    return redirect('/login');
+  }
+
+  try {
+    const response = await authApi.verifyToken();
+    if (response.success && response.data) {
+      const role = response.data.role || localStorage.getItem('user_role');
+      if (role) {
+        localStorage.setItem('user_role', role);
+      }
+
+      if (role !== 'admin') {
+        return redirect('/dashboard');
+      }
+
+      return response.data;
+    } else {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_role');
+      return redirect('/login');
+    }
+  } catch (error) {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_role');
     return redirect('/login');
   }
 };

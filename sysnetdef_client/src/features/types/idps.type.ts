@@ -79,12 +79,6 @@ export interface IRulesWithPagination {
   };
 }
 
-export interface BulkImportResponse {
-  success: boolean;
-  message: string;
-  data: any;
-}
-
 // analyze types
 // 1.Chi tiết thống kê cho từng loại Action (Normal, Drop, Alert)
 export interface ActionStats {
