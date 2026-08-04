@@ -28,8 +28,18 @@ router.get("/disk-usage", authenticate, storageController.getDiskStatus);
  */
 router.patch("/disk-settings", authenticate, storageController.updateSettings);
 
-// Bạn có thể thêm các route bổ sung nếu sau này phát triển thêm logic
-// Ví dụ: Export thông tin cấu hình hoặc Reset thông số phần cứng
-// router.post("/reset-stats", authenticate, storageController.resetHardwareStats);
+/**
+ * @route   GET /api/device-storage/logs-retention
+ * @route   PUT /api/device-storage/logs-retention
+ */
+router.get("/logs-retention", authenticate, storageController.getLogsRetention);
+router.put("/logs-retention", authenticate, storageController.updateLogsRetention);
+
+/**
+ * @route   GET /api/device-storage/activity-settings
+ * @route   PUT /api/device-storage/activity-settings
+ */
+router.get("/activity-settings", authenticate, storageController.getActivitySettings);
+router.put("/activity-settings", authenticate, storageController.updateActivitySettings);
 
 export default router;

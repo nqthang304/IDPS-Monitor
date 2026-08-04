@@ -61,14 +61,40 @@ export const createApp = () => {
     logger.warn("APP", `Created missing database directory: ${dbDir}`);
   }
 
+  // 1. Tự động khởi tạo cấu trúc Bảng & Seed Data trước
+  initializeData();
+
+  // 2. Chạy Drizzle migration nếu tìm thấy thư mục migration
   try {
-    const migrationsFolder = path.resolve(process.cwd(), "drizzle");
-    migrate(db, { migrationsFolder });
-    initializeData();
-    logger.success("APP", "Migration and Initialization completed.");
+    let migrationsFolder = path.resolve(__dirname, "../drizzle");
+    if (!fs.existsSync(migrationsFolder)) {
+      migrationsFolder = path.resolve(__dirname, "../../drizzle");
+    }
+    if (!fs.existsSync(migrationsFolder)) {
+      migrationsFolder = path.resolve(process.cwd(), "sysnetdef_server/drizzle");
+    }
+    if (!fs.existsSync(migrationsFolder)) {
+      migrationsFolder = path.resolve(process.cwd(), "../sysnetdef_server/drizzle");
+    }
+    if (!fs.existsSync(migrationsFolder)) {
+      migrationsFolder = path.resolve(process.cwd(), "drizzle");
+    }
+
+    if (fs.existsSync(migrationsFolder)) {
+      migrate(db, { migrationsFolder });
+      logger.success("APP", "Migration and Initialization completed.");
+    }
   } catch (error: any) {
-    if (!error.message.includes("no statements")) {
-      logger.error("APP", `Setup failed: ${error.message}`);
+    const msg = error?.message || "";
+    const isIgnorable =
+      msg.includes("no statements") ||
+      msg.includes("already exists") ||
+      msg.includes("Failed to run the query 'CREATE TABLE") ||
+      msg.includes("table `users` already exists") ||
+      msg.includes("table `rules` already exists");
+
+    if (!isIgnorable) {
+      logger.warn("APP", `Migration check note: ${msg}`);
     }
   }
 

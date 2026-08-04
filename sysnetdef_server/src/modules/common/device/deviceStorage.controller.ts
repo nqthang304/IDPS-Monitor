@@ -57,4 +57,58 @@ export class DeviceStorageController {
       return res.status(500).json({ success: false, message: error.message });
     }
   };
+
+  /**
+   * GET /device-storage/logs-retention
+   */
+  getLogsRetention = async (req: Request, res: Response) => {
+    try {
+      const data = await this.storageService.getLogsRetention();
+      return res.status(200).json({ success: true, status: 200, data });
+    } catch (error: any) {
+      logger.error("STORAGE_CONTROLLER", `Get logs retention failed: ${error.message}`);
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  };
+
+  /**
+   * PUT /device-storage/logs-retention
+   */
+  updateLogsRetention = async (req: Request, res: Response) => {
+    try {
+      const { usageLimit, autoClean, fileRotation } = req.body;
+      const data = await this.storageService.updateLogsRetention({ usageLimit, autoClean, fileRotation });
+      return res.status(200).json({ success: true, status: 200, message: "Logs retention updated successfully", data });
+    } catch (error: any) {
+      logger.error("STORAGE_CONTROLLER", `Update logs retention failed: ${error.message}`);
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  };
+
+  /**
+   * GET /device-storage/activity-settings
+   */
+  getActivitySettings = async (req: Request, res: Response) => {
+    try {
+      const data = await this.storageService.getActivitySettings();
+      return res.status(200).json({ success: true, status: 200, data });
+    } catch (error: any) {
+      logger.error("STORAGE_CONTROLLER", `Get activity settings failed: ${error.message}`);
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  };
+
+  /**
+   * PUT /device-storage/activity-settings
+   */
+  updateActivitySettings = async (req: Request, res: Response) => {
+    try {
+      const { cleanActive, cleanTime } = req.body;
+      const data = await this.storageService.updateActivitySettings({ cleanActive, cleanTime });
+      return res.status(200).json({ success: true, status: 200, message: "Activity settings updated successfully", data });
+    } catch (error: any) {
+      logger.error("STORAGE_CONTROLLER", `Update activity settings failed: ${error.message}`);
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  };
 }
