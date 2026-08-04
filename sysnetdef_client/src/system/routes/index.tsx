@@ -16,6 +16,7 @@ import IdpsAnalyze from "@/application/pages/idps/idpsAnalyze/idpsAnalyze";
 // management
 import Logs from "@/application/pages/management/logsManagement/logs";
 import Users from "@/application/pages/management/usersManagement/users";
+import Profile from "@/application/pages/profile/profile";
 
 
 export const router = createBrowserRouter([
@@ -77,8 +78,8 @@ export const router = createBrowserRouter([
 
             // 7. CÁC TRANG ĐỘC LẬP (Không nằm trong SubMenu)
             {
-                path: "profile", // URL: /user
-                element: <div>Nội dung trang quản lý profile</div>
+                path: "profile",
+                element: <Profile />
             }
         ]
     }

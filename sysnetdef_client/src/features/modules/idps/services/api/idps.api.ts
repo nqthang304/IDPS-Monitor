@@ -1,7 +1,7 @@
 import axiosClient from "@/config/api/axiosClient";
 import type { 
     IdpsStatusResponse, IdpsUpdatePayload, IdpsActiveRuleCount, 
-    IdpsRule, IRulesWithPagination, BulkImportResponse, AnalyzeTrafficResponse 
+    IdpsRule, IRulesWithPagination, AnalyzeTrafficResponse 
 } from "@/features/types/idps.type";
 import type { ApiResponse } from "@/features/types";
 import { logger } from "@/utils/logger.utils";
@@ -210,21 +210,6 @@ export const idpsApi = {
         }
     },
 
-    importIdpsRules: async (file: File): Promise<BulkImportResponse> => {
-        try {
-            logger.info('IDPS', `Initiating bulk import for file: ${file.name}`);
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const response = await axiosClient.post<BulkImportResponse>("/idps/bulk-import", formData);
-
-            logger.success('IDPS', `Bulk import completed successfully for file: ${file.name}`);
-            return response.data;
-        } catch (error: any) {
-            logger.error('IDPS', `Bulk import failed: ${error.message || 'Unknown Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống khi import hàng loạt" };
-        }
-    },
 
     updateStatusRules: async (ids: number[], status: boolean): Promise<ApiResponse> => {
         try {

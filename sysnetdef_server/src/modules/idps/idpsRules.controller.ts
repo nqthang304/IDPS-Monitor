@@ -161,36 +161,6 @@ export class IdpsRuleController {
     }
   };
 
-  /**
-   * Import từ file .rules
-   */
-  bulkImport = async (req: Request, res: Response) => {
-    const userId = (req as any).user?.id || 1;
-    const username = (req as any).user?.username || 'admin';
-    try {
-      if (!req.file) {
-        throw new Error("The .rules file was not found. Please upload a file with the .rules extension.");
-      }
-
-      const fileContent = req.file.buffer.toString('utf-8');
-      const result = await this.idpsRuleRequestService.bulkImportFromRulesFile(fileContent);
-
-      const importedCount = (result as any).count || 0;
-      logger.success("IDPS_CONTROLLER", `Bulk imported rules from file ${req.file.originalname}`);
-
-      await AuditLogger.logImportRules(userId, username, importedCount, 'SUCCESS', `File: ${req.file.originalname}`);
-
-      return res.status(200).json({
-        success: true,
-        message: result.message || `Rules have been successfully imported from the file and the device has been synchronized.`,
-        currentAction: result.currentAction,
-        importedCount
-      });
-    } catch (error: any) {
-      await AuditLogger.logImportRules(userId, username, 0, 'FAILED', error.message);
-      return this.handleError(res, error, "IDPS_CONTROLLER_IMPORT");
-    }
-  };
 
   /**
    * Cập nhật rule: PATCH /idps-rules/:ruleId

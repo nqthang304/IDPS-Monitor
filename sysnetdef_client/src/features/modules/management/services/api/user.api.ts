@@ -63,4 +63,26 @@ export const userApi = {
       throw error.response?.data || { message: "Lỗi hệ thống khi xóa user" };
     }
   },
+
+  getProfile: async (): Promise<ApiResponse<UserItem>> => {
+    try {
+      logger.debug("API", "Fetching profile data...");
+      const response = await axiosClient.get("user/profile");
+      return response.data;
+    } catch (error: any) {
+      logger.error("API", `Failed to fetch profile: ${error.message || 'System Error'}`);
+      throw error.response?.data || { message: "Lỗi hệ thống khi lấy thông tin profile" };
+    }
+  },
+
+  updateProfile: async (payload: Partial<UserItem>): Promise<ApiResponse<UserItem>> => {
+    try {
+      logger.info("API", "Updating profile...");
+      const response = await axiosClient.put("user/profile", payload);
+      return response.data;
+    } catch (error: any) {
+      logger.error("API", `Failed to update profile: ${error.message || 'System Error'}`);
+      throw error.response?.data || { message: "Lỗi hệ thống khi cập nhật profile" };
+    }
+  },
 };

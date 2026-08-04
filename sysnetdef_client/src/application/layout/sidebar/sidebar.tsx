@@ -86,7 +86,7 @@ const HoverInlineSidebar: React.FC = () => {
     {
       key: '/rules',
       icon: <EyeOutlined />,
-      label: <Link to="/rules">RULES MANAGEMENT</Link>,
+      label: <Link to="/rules">RULES</Link>,
       onClick: () => setOpenKeys([]),
     },
     {
@@ -153,12 +153,16 @@ const HoverInlineSidebar: React.FC = () => {
             theme="dark"
             mode="inline"
             selectable={false}
+            onClick={({ key }) => {
+              if (key === 'logout') {
+                handleLogout();
+              }
+            }}
             items={[
               {
-                key: '/login',
+                key: 'logout',
                 icon: <LogoutOutlined />,
-                // Gán sự kiện Logout vào Modal
-                label: <span onClick={handleLogout} style={{ cursor: 'pointer' }}>LOGOUT</span>,
+                label: 'LOGOUT',
               },
             ]}
           />
