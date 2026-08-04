@@ -85,7 +85,7 @@ const IDPSLogs = () => {
             return new Blob([content], { type: 'text/plain' });
           }
           
-          throw new Error("Không thể đọc dữ liệu file từ Server.");
+          throw new Error("Unable to read file data from Server.");
         }
       );
 

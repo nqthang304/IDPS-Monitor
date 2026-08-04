@@ -7,7 +7,7 @@ export class UserService {
   async getProfile(userId: number) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error("User không tồn tại");
+      throw new Error("User not found");
     }
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
@@ -16,7 +16,7 @@ export class UserService {
   async getUserById(id: number) {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new Error("User không tồn tại");
+      throw new Error("User not found");
     }
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
@@ -37,12 +37,12 @@ export class UserService {
   }) {
     const existingUsername = await this.userRepository.findByUsername(data.username);
     if (existingUsername) {
-      throw new Error("Tên đăng nhập đã tồn tại");
+      throw new Error("Username already exists");
     }
 
     const existingEmail = await this.userRepository.findByEmail(data.email);
     if (existingEmail) {
-      throw new Error("Email đã được sử dụng");
+      throw new Error("Email is already in use");
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -75,7 +75,7 @@ export class UserService {
   ) {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new Error("User không tồn tại");
+      throw new Error("User not found");
     }
 
     const updateData: any = {};
@@ -84,7 +84,7 @@ export class UserService {
       if (data.email !== user.email) {
         const existingEmail = await this.userRepository.findByEmail(data.email);
         if (existingEmail) {
-          throw new Error("Email đã được sử dụng");
+          throw new Error("Email is already in use");
         }
       }
       updateData.email = data.email;
@@ -107,7 +107,7 @@ export class UserService {
   async deleteUser(id: number) {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new Error("User không tồn tại");
+      throw new Error("User not found");
     }
     await this.userRepository.deleteUser(id);
     return true;

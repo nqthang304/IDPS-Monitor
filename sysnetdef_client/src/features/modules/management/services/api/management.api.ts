@@ -58,7 +58,7 @@ export const logApi = {
             return response.data;
         } catch (error: any) {
             logger.error('LOGS_MANAGER', `Failed to fetch IDPS log files: ${error.message || 'System Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống khi lấy danh sách file log" };
+            throw error.response?.data || { message: "System error while fetching log files list" };
         }
     },
 
@@ -73,7 +73,7 @@ export const logApi = {
             return response;
         } catch (error: any) {
             logger.error('LOGS_MANAGER', `Failed to download log file ${fileId}: ${error.message || 'System Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống khi tải file log" };
+            throw error.response?.data || { message: "System error while downloading log file" };
         }
     },
 
@@ -84,7 +84,7 @@ export const logApi = {
             return response.data;
         } catch (error: any) {
             logger.error('LOGS_MANAGER', `Failed to fetch Audit Logs: ${error.message || 'System Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống khi lấy danh sách audit logs" };
+            throw error.response?.data || { message: "System error while fetching audit logs" };
         }
     },
 
@@ -95,7 +95,7 @@ export const logApi = {
             return response.data;
         } catch (error: any) {
             logger.error('LOGS_MANAGER', `Failed to delete audit logs: ${error.message || 'System Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống khi xóa log" };
+            throw error.response?.data || { message: "System error while deleting audit logs" };
         }
     },
 
@@ -106,7 +106,7 @@ export const logApi = {
             return response.data;
         } catch (error: any) {
             logger.error('LOGS_MANAGER', `Failed to delete audit logs by range: ${error.message || 'System Error'}`);
-            throw error.response?.data || { message: "Lỗi hệ thống khi xóa log theo khoảng thời gian" };
+            throw error.response?.data || { message: "System error while deleting audit logs by time range" };
         }
     },
 };

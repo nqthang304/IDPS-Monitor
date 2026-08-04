@@ -27,7 +27,7 @@ export const userApi = {
       return response.data;
     } catch (error: any) {
       logger.error("API", `Failed to fetch users: ${error.message || 'System Error'}`);
-      throw error.response?.data || { message: "Lỗi hệ thống khi lấy danh sách user" };
+      throw error.response?.data || { message: "System error while fetching users list" };
     }
   },
 
@@ -38,7 +38,7 @@ export const userApi = {
       return response.data;
     } catch (error: any) {
       logger.error("API", `Failed to create user: ${error.message || 'System Error'}`);
-      throw error.response?.data || { message: "Lỗi hệ thống khi tạo user mới" };
+      throw error.response?.data || { message: "System error while creating new user" };
     }
   },
 
@@ -49,7 +49,7 @@ export const userApi = {
       return response.data;
     } catch (error: any) {
       logger.error("API", `Failed to update user ID ${id}: ${error.message || 'System Error'}`);
-      throw error.response?.data || { message: "Lỗi hệ thống khi cập nhật thông tin user" };
+      throw error.response?.data || { message: "System error while updating user information" };
     }
   },
 
@@ -60,7 +60,7 @@ export const userApi = {
       return response.data;
     } catch (error: any) {
       logger.error("API", `Failed to delete user ID ${id}: ${error.message || 'System Error'}`);
-      throw error.response?.data || { message: "Lỗi hệ thống khi xóa user" };
+      throw error.response?.data || { message: "System error while deleting user" };
     }
   },
 
@@ -71,7 +71,7 @@ export const userApi = {
       return response.data;
     } catch (error: any) {
       logger.error("API", `Failed to fetch profile: ${error.message || 'System Error'}`);
-      throw error.response?.data || { message: "Lỗi hệ thống khi lấy thông tin profile" };
+      throw error.response?.data || { message: "System error while fetching profile data" };
     }
   },
 
@@ -82,7 +82,7 @@ export const userApi = {
       return response.data;
     } catch (error: any) {
       logger.error("API", `Failed to update profile: ${error.message || 'System Error'}`);
-      throw error.response?.data || { message: "Lỗi hệ thống khi cập nhật profile" };
+      throw error.response?.data || { message: "System error while updating profile" };
     }
   },
 };
