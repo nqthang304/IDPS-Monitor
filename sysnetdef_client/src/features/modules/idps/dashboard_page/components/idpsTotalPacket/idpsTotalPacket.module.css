@@ -1,0 +1,43 @@
+.totalCard {
+    background-color: #d48806; /* Màu trắng theo mẫu */
+    border-radius: 8px;
+    padding: 16px 24px;
+    height: 100%;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.title {
+    font-size: 1rem;
+    /* font-weight: 600; */
+    color: #fff;
+    margin: 0;
+    line-height: 1.2;
+    min-height: 2.25rem;
+}
+
+.valueContainer {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.1;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.icon {
+    font-size: 2.25rem;
+    color: #fff;
+    margin-right: 8px;
+}

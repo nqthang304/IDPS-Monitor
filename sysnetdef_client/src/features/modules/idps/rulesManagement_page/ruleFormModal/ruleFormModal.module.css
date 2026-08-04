@@ -1,0 +1,120 @@
+.customModal :global(.ant-modal-content) {
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.modalTitle {
+    font-size: 24px;
+    font-weight: 500;
+    color: #333;
+}
+
+.customInput, .customSelect :global(.ant-select-selector) {
+    border-radius: 8px !important;
+    background-color: #f8f8f8 !important;
+    border: 1px solid #d9d9d9 !important;
+}
+
+/* Severity Circles */
+.severityOption span {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    color: #000;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+}
+
+.sev1 { 
+    background-color: #ff4d4f; 
+    border: 1px solid #ff0000;
+}
+.sev2 { 
+    background-color: #ff7a45; 
+    border: 1px solid #ff7a45;
+}
+.sev3 { 
+    background-color: #ffa940; 
+    border: 1px solid #ffa940;
+}
+.sev4 { 
+    background-color: #5488f7; 
+    border: 1px solid #5488f7;
+}
+
+
+/* Action Tags */
+.tagAlert, .tagDrop {
+    padding: 2px 12px;
+    border-radius: 4px;
+    color: #000;
+    font-weight: 500;
+    display: block;
+    width: fit-content;
+}
+
+.tagAlert { 
+    background-color: #f5ff64;
+    border: 1px solid #d4ff00;
+}
+.tagDrop { 
+    background-color: #ffab87ee;
+    border: 1px solid #ff4d01ee;
+}
+
+.protocolTcp {
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: #1d39c4;
+    font-weight: 600;
+    border: 1px solid #5488f7;
+    background-color: #d8e4ff;
+    display: block;
+    width: fit-content;
+}
+
+.protocolUdp {
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: #237804;
+    font-weight: 600;
+    border: 1px solid #73d13d;
+    background-color: #d9f7be;
+    display: block;
+    width: fit-content;
+}
+
+.protocolIcmp {
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: #ad6800;
+    font-weight: 600;
+    border: 1px solid #ffc53d;
+    background-color: #fff1b8;
+    display: block;
+    width: fit-content;
+}
+
+.footerAction {
+    margin-top: 20px;
+}
+
+.btnCancel {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+}
+
+.btnCancel:hover {
+    background-color: #ff7875 !important;
+    color: white !important;
+}
+
+.btnCreate {
+    background-color: #1677ff;
+    border-radius: 6px;
+    min-width: 80px;
+}

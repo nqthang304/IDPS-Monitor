@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".", 
+    "paths": {
+      "@/*": ["src/*"],
+      "#/*": ["src/*"]
+    },
+    "target": "ES2020",                /* Phù hợp với Node.js hiện đại trên Raspbian */
+    "module": "CommonJS",              /* Bắt buộc theo yêu cầu của bạn */
+    "lib": ["ES2020"],
+    "outDir": "./dist",                /* File JS sau khi build sẽ nằm ở đây */
+    "rootDir": "./src",                /* Source code chính */
+    "strict": true,                    /* Bật kiểm tra kiểu chặt chẽ */
+    "esModuleInterop": true,           /* Hỗ trợ import các gói CommonJS như 'net', 'fs' */
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

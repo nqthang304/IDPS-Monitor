@@ -1,0 +1,213 @@
+.tableWrapper {
+    /* flex: 1; */
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+}
+
+.tableWrapper :global(.ant-table-wrapper),
+.tableWrapper :global(.ant-spin-nested-loading),
+.tableWrapper :global(.ant-spin-container) {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.tableWrapper :global(.ant-table) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.tableWrapper :global(.ant-table-container) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Phần Body của bảng sẽ tự động cuộn và lấp đầy không gian trống */
+.tableWrapper :global(.ant-table-body) {
+    flex: 1;
+    overflow-y: auto !important; 
+}
+
+/* Pagination luôn nằm ở dưới cùng */
+.tableWrapper :global(.ant-pagination) {
+    margin-top: 16px !important;
+    margin-bottom: 0 !important;
+}
+
+
+/* --- 2. TYPOGRAPHY & RESPONSIVE --- */
+.srcIP {
+    
+    word-break: break-all;
+    color: #1677ff;
+    font-weight: 600;
+    border: 1px solid #1677ff;
+    background-color: #e6f1ff;
+    border-radius: 4px;
+    padding: 2px 8px;
+}
+
+.dstIP {
+    word-break: break-all;
+    color: #009719;
+    font-weight: 600;
+    border: 1px solid #009719;
+    background-color: #d5eae5;
+    border-radius: 4px;
+    padding: 2px 8px;
+}
+
+.srcPort {
+    word-break: break-all;
+    color: #002fff;
+    font-weight: 600;
+    padding: 2px 8px;
+    border: 1px solid #002fff;
+    background-color: #d8e4ff;
+    border-radius: 4px;
+}
+.dstPort {
+    word-break: break-all;
+    color: #5488f7;
+    font-weight: 600;
+    padding: 2px 8px;
+    border: 1px solid #5488f7;
+    background-color: #d8e4ff;
+    border-radius: 4px;
+}
+
+.tableTag {
+    width: 100%;
+    max-width: 80px;
+    text-align: center;
+    margin-right: 0 !important;
+    font-size: 10px;
+    padding: 0 4px;
+}
+
+@media (max-width: 1024px) {
+    .tableWrapper {
+        overflow-x: auto;
+    }
+    .tableWrapper :global(.ant-table) {
+        min-width: 900px;
+    }
+}
+
+.tableWrapper :global(.ant-table-thead > tr > th) {
+    background-color: #fafafa;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.tableWrapper :global(.ant-table-tbody > tr > td) {
+    padding: 8px 4px !important;
+}
+
+
+/* --- 3. CUSTOM MÀU SẮC ACTION & SEVERITY CỦA BẠN --- */
+.alertAction {
+    background-color: #f5ff64;
+    border: 1px solid #d4ff00;
+    color: #000;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 2px 8px;
+    display: inline-block; 
+}
+
+.dropAction {
+    background-color: #ffab87ee;
+    border: 1px solid #ff4d01ee;
+    color: #000;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 2px 8px;
+    display: inline-block; 
+}
+
+.severity1 { 
+    background-color: #ff4d4f; 
+    border: 1px solid #ff0000;
+}
+.severity2 { 
+    background-color: #ff7a45; 
+    border: 1px solid #ff7a45;
+}
+.severity3 { 
+    background-color: #ffa940; 
+    border: 1px solid #ffa940;
+}
+.severity4 { 
+    background-color: #5488f7; 
+    border: 1px solid #5488f7;
+}
+
+.protocolTcp {
+    background-color: #d8e4ff;
+    color: #1d39c4;
+    border: 1px solid #5488f7;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.protocolUdp {
+    background-color: #d9f7be;
+    color: #237804;
+    border: 1px solid #73d13d;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.protocolIcmp {
+    background-color: #fff1b8;
+    color: #ad6800;
+    border: 1px solid #ffc53d;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Gom chung các thuộc tính giống nhau của Severity */
+.severity1,
+.severity2,
+.severity3,
+.severity4 {
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: #000;
+    font-weight: 600;
+    display: inline-block; /* Căn giữa trong ô table */
+}
+
+/* Tắt sạch Transition khi resize. Antd mặc định có transition 0.3s cho mọi cell, 
+   đây là nguyên nhân gây lag cực nặng khi có nhiều dòng. */
+.tableWrapper :global(.ant-table-cell) {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Chỉ bật lại hiệu ứng đổi màu nền nhẹ khi hover cho người dùng biết đang chọn dòng nào */
+.tableWrapper :global(.ant-table-tbody > tr.ant-table-row:hover > td) {
+    transition: background-color 0.1s ease !important;
+}
+.fixedHeightRow {
+    height: 40px; /* Chốt cứng chiều cao để trình duyệt không phải đo đạc từng dòng */
+}
+
+:global(.ant-select-dropdown) {
+    z-index: 9999 !important;
+}

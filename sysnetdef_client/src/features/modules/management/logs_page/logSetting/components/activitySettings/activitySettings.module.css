@@ -1,0 +1,71 @@
+.card {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: #000;
+}
+
+/* Nút Save xanh lá */
+.saveBtn {
+    background-color: #49cc19 !important;
+    border-color: #49cc19 !important;
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    height: 32px !important;
+}
+
+.settingRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.label {
+    font-size: 16px;
+    color: #000;
+    font-weight: 500;
+}
+
+.controlGroup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Ô nhập liệu hình viên thuốc màu xám */
+.pillInput {
+    width: 100px !important;
+    border-radius: 20px !important;
+    background-color: #ffffff !important;
+    border: 1px solid #d9d9d9 !important;
+}
+
+.pillInput :global(.ant-input-number-input) {
+    text-align: center;
+}
+
+/* Chỉnh màu Switch khi On thành xanh lá */
+.greenSwitch :global(.ant-switch-checked) {
+    background-color: #49cc19 !important;
+}

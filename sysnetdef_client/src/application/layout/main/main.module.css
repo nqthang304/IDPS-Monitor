@@ -1,0 +1,33 @@
+.main {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+}
+
+.sidebar {
+  flex-shrink: 0;
+  height: 100vh;
+  width: 80px;
+  position: relative;
+  /* overflow-y: auto;    
+  overflow-x: hidden; */
+  z-index: 10000;
+}
+
+.mainContent {
+  flex: 1;
+  overflow-y: auto;
+  height: 100vh;
+  padding-left: 0px; /* <--- Mặc định đã nhường 80px từ lớp .sidebar ở trên */
+  transition: padding-left 0.25s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+
+.loaderOverlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 400px;
+}

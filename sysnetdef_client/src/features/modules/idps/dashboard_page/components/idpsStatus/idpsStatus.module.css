@@ -1,0 +1,61 @@
+.statusCard {
+    background-color: #4d90cb;
+    border-radius: 8px;
+    padding: 16px 24px;
+    height: 100%;
+    width: 100%;
+    min-height: 100px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: none !important; 
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+
+
+
+.statusCardActive {
+    justify-content: space-between;
+}
+
+/* Ghi đè màu chữ cho toàn bộ nội dung trong card */
+.statusCard :global(.ant-typography) {
+    color: #fff !important;
+}
+
+.statusHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 2.5rem;
+}
+
+.statusLabel {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.controlRow {
+    width: 100%;
+    font-size: 1rem;
+}
+
+.customSegmented {
+    background: rgba(255, 255, 255, 0.2) !important; /* Nền trong suốt nhẹ */
+    font-size: 1rem;
+}
+
+.customSegmented :global(.ant-segmented-item-selected) {
+    background-color: #ffffff !important;
+    color: #4d90cb !important;
+}
+
+.customSegmented :global(.ant-segmented-item) {
+    color: #fff;
+    font-size: 1rem;
+}

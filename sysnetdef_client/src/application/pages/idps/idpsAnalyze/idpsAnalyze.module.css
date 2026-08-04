@@ -1,0 +1,67 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background-color: #f0f2f5;
+    min-height: 100vh;
+    position: relative;
+}
+
+.containerChangeTime {
+    height: calc(100vh - 64px);
+    overflow: hidden;
+    position: relative;
+}
+
+.header {
+    margin-bottom: 20px;
+}
+
+.timeRange {
+    font-size: 14px;
+}
+
+/* Thống nhất style Button */
+.btnChangeTime,
+.btnExport {
+    border-radius: 6px !important;
+    font-weight: 500;
+}
+
+.btnChangeTime {
+    background-color: #f4f453 !important;
+    color: #000 !important;
+    border: none;
+}
+
+.btnExport {
+    background-color: #1565c0 !important;
+}
+
+/* Thống nhất cấu trúc Card */
+.card {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.cardTitle {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.cardBody {
+    flex: 1;
+    min-height: 200px;
+}
+
+.fullHeight {
+    height: calc(100% - 16px);
+    /* Trừ đi margin-bottom của card */
+}

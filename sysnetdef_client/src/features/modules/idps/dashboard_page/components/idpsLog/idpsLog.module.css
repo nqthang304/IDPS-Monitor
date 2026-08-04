@@ -1,0 +1,51 @@
+/* Container chính */
+.container {
+  background-color: #f0f2f5;
+  border-radius: 8px;
+  width: 100%;
+}
+
+/* Ép chiều cao cố định cho hàng - BẮT BUỘC cho Virtual Scroll */
+.container :global(.ant-table-row) {
+  height: 38px !important;
+}
+
+/* --- LOGIC ĐỔ MÀU CHO VIRTUAL TABLE --- */
+
+/* Màu Normal (Xanh lá nhạt) */
+.rowNormal :global(.ant-table-cell) {
+  background-color: #9cdb9e !important;
+  color: #000 !important;
+}
+
+/* Màu Alert (Vàng) */
+.rowAlert :global(.ant-table-cell) {
+  background-color: #fce473 !important;
+  color: #000 !important;
+}
+
+/* Màu Drop (Hồng/Đỏ nhạt) */
+.rowDrop :global(.ant-table-cell) {
+  background-color: #fc8d8d !important;
+  color: #000 !important;
+}
+
+/* Màu Malware (Đỏ đậm) */
+.rowMalware :global(.ant-table-cell) {
+  background-color: #e61919 !important;
+  color: #fff !important;
+  font-weight: bold;
+}
+
+/* Tối ưu khi hover để không bị mất màu nền */
+.container :global(.ant-table-row):hover :global(.ant-table-cell) {
+  filter: brightness(0.92);
+  transition: filter 0.2s;
+}
+
+/* Cố định Header */
+.container :global(.ant-table-thead > tr > th) {
+  white-space: nowrap;
+  background: #fafafa !important;
+  font-weight: 700 !important;
+}

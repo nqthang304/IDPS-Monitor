@@ -1,0 +1,104 @@
+.reportContainer {
+    padding: 20px;
+    background: #ffffff; /* Màu nền nhạt để dễ phân biệt các khối trong preview */
+    color: #000;
+    width: 920px;
+    margin: 0 auto;
+    height: auto;
+}
+
+.pdfSection {
+    background: #fff;
+    padding: 0px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #333;
+    padding-bottom: 15px;
+}
+
+.summaryTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.summaryTable th, .summaryTable td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.chartSection {
+    width: 100%;
+    display: block;
+    clear: both;
+}
+
+.chartWrapper {
+    height: 350px;
+    width: 100%;
+    position: relative;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.pieWrapper {
+    height: 580px;
+    width: 100%;
+    position: relative;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.chartPlaceholder {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+}
+
+.tableSection {
+    width: 100%;
+}
+
+.logo {
+    height: 4rem;
+    object-fit: contain;
+}
+
+.title h1 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.tableSection h3, .pdfSection h3 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.pieWrapperSplit {
+    height: 380px; /* Chiều cao vàng để các đường chỉ vạch bung ra ngoài không bị vỡ bố cục khi in */
+    width: 100%;
+    position: relative;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    margin-top: 8px;
+    background: #ffffff;
+}
+
+/* Tiêu đề phụ nhỏ nằm trên đầu mỗi biểu đồ */
+.pieSubTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: #434343;
+    text-align: center;
+    margin-top: 5px;
+}

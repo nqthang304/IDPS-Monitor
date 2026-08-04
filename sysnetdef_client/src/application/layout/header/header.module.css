@@ -1,0 +1,70 @@
+/* header.module.css */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  background-color: #ffffff;
+  height: 64px; /* Độ cao chuẩn cho header */
+  border-bottom: 1px solid #e5e7eb; /* Đường kẻ mờ phía dưới */
+  position: sticky;
+  top: 0;
+  z-index: 9000;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280; /* Màu xám nhẹ cho link phụ */
+}
+
+.breadcrumbs a {
+  text-decoration: none;
+  color: #9ca3af;
+  transition: color 0.2s ease;
+}
+
+.breadcrumbs a:hover {
+  color: #2563eb; /* Màu xanh khi hover */
+}
+
+.separator {
+  margin: 0 8px;
+  color: #d1d5db;
+  user-select: none;
+}
+
+.current {
+  color: #111827; /* Màu đậm cho trang hiện tại */
+  font-weight: 600;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  height: 40px;
+}
+
+.logo img {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Tùy chỉnh hiển thị cho các link Home */
+.breadcrumbs > a:first-child {
+  color: #9ca3af;
+}

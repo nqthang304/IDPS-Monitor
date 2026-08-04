@@ -1,0 +1,31 @@
+.container {
+    height: fit-content;
+    border-radius: 12px;
+}
+
+.section {
+    margin-bottom: 24px;
+}
+
+.sectionTitle {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+/* Container ép các cột có chiều cao bằng nhau */
+.equalHeightRow {
+    display: flex;
+}
+
+.flexCol {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Div bọc component con để kéo dãn */
+.componentWrapper {
+    flex: 1;
+    display: flex;
+}

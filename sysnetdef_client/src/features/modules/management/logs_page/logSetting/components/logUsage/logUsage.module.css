@@ -1,0 +1,37 @@
+.rowContainer {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+    flex-wrap: nowrap;
+    margin-bottom: 20px;
+}
+
+.statBox {
+    flex: 1;
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    font-size: 1rem;
+    color: #8c8c8c;
+    margin-bottom: 8px;
+}
+
+/* Base style cho value */
+.value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* CSS riêng cho từng loại value */
+.valueLogSize { color: #1890ff; }
+.valueCapacity { color: #52c41a; } 
+.valueUsed { color: #fa8c16; }     
+.valueFree { color: #f50; }    
+.valueLog { color: #722ed1; }     

@@ -1,0 +1,12 @@
+# Bỏ qua node_modules trong server và client
+sysnetdef_server/node_modules/
+sysnetdef_server/dist/
+sysnetdef_server/drizzle/
+sysnetdef_client/node_modules/
+sysnetdef_client/dist/
+
+# Các file rác và file môi trường
+*.log
+.env
+*.db
+*.rules

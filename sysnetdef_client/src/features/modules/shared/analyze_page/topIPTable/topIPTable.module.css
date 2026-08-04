@@ -1,0 +1,42 @@
+.customTable :global(.ant-table) {
+    height: 100%;
+    background: transparent;
+}
+
+.customTable :global(.ant-table-thead > tr > th) {
+    background: #fafafa;
+    font-weight: 700;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* Bo góc cho khung bảng giống hình mẫu */
+.customTable {
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.customTable :global(.ant-table-cell) {
+    padding: 8px 12px !important;
+    font-size: 1rem;
+}
+
+
+
+.customTable :global(.ant-table-body) {
+    overflow-y: auto !important; 
+    flex: 1; 
+}
+
+.customTable :global(.ant-table-body::-webkit-scrollbar) {
+    width: 6px;
+}
+
+.customTable :global(.ant-table-body::-webkit-scrollbar-thumb) {
+    background: #d9d9d9;
+    border-radius: 3px;
+}
+
+.customTable :global(.ant-table-body::-webkit-scrollbar-track) {
+    background: transparent;
+}

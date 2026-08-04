@@ -1,0 +1,120 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 64px);
+    padding: 20px;
+    background-color: #f0f2f5;
+    box-sizing: border-box;
+    overflow: auto;
+}
+.header {
+    margin-bottom: 20px;
+}
+.actionArea {
+    flex-shrink: 0;
+}
+
+.actionBtn {
+    display: flex;
+    align-items: center;
+}
+
+/* Tùy chỉnh màu xanh lá cho nút Import */
+.btnImport {
+    background-color: #2e7d32 !important; /* Màu xanh lá đậm */
+    border-color: #2e7d32 !important;
+    border-radius: 6px !important;
+    font-weight: 500;
+}
+
+.btnImport:hover {
+    background-color: #388e3c !important;
+    border-color: #388e3c !important;
+}
+
+/* Tùy chỉnh màu xanh dương cho nút Add Manual */
+.btnAddManual {
+    background-color: #1565c0 !important; /* Màu xanh dương chuẩn */
+    border-color: #1565c0 !important;
+    border-radius: 6px !important;
+    font-weight: 500;
+}
+
+.btnAddManual:hover {
+    background-color: #1976d2 !important;
+    border-color: #1976d2 !important;
+}
+
+.contentArea {
+    flex: 1; 
+    min-height: fit-content; 
+    display: flex;
+    flex-direction: column;
+    /* background-color: #fff; */
+    border-radius: 8px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+/* Style cho chế độ Files */
+.filesLayout {
+    display: flex;
+    gap: 16px;
+    height: 100%;
+}
+
+.sidebar {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebarContent {
+    flex: 1;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.redBox {
+    flex: 1;
+    background-color: #ED1C24;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.selectionInfo {
+    background-color: #ffffff;
+    border: 1px solid #b3daff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.deleteAllButton {
+    background-color: #d32f2f !important; /* Màu đỏ đậm */
+    border-color: #d32f2f !important;
+    color: white !important;
+    border-radius: 6px !important;
+    font-weight: 500;
+}
+
+.disableAllButton {
+    background-color: #f57c00 !important; /* Màu cam đậm */
+    border-color: #f57c00 !important;
+    color: white !important;
+    border-radius: 6px !important;
+    font-weight: 500;
+}
+
+.enableAllButton {
+    background-color: #2e7d32 !important; /* Màu xanh lá đậm */
+    border-color: #2e7d32 !important;
+    color: white !important;
+    border-radius: 6px !important;
+    font-weight: 500;
+}

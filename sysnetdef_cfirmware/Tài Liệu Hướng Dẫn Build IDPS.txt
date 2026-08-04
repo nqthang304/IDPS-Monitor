@@ -1,0 +1,354 @@
+Tài Liệu Hướng Dẫn Build IDPS trên Raspberry Pi
+________________________________________
+1. Tổng Quan Hệ Thống
+Hệ thống IDPS (Intrusion Detection and Prevention System) được tích hợp vào phần mềm ACS Sysnet-Def, chạy trên Raspberry Pi. Hệ thống sử dụng Snort 3 làm engine phát hiện xâm nhập, giao tiếp với GUI qua Unix Domain Socket (UDS), và hỗ trợ hai chế độ hoạt động:
+•	IDS Mode (Intrusion Detection System): Lắng nghe thụ động trên bridge br0, chỉ cảnh báo (Alert), không chặn gói tin.
+•	IPS Mode (Intrusion Prevention System): Chạy inline trên eth0:eth1, có thể chặn (Drop) gói tin nguy hiểm.
+________________________________________
+2. Yêu Cầu Phần Cứng & Phần Mềm
+Phần cứng:
+•	Raspberry Pi 4 (khuyến nghị RAM ≥ 4GB)
+•	Ít nhất 2 card mạng (eth0, eth1) để chạy IPS mode
+•	Thẻ nhớ microSD ≥ 32GB
+Hệ điều hành:
+•	Raspberry Pi OS (64-bit, Debian Bullseye/Bookworm)
+Phần mềm cần cài:
+•	Snort 3
+•	Node.js (để chạy UDS server nhận log)
+•	libpcap, libdnet, libdaq
+•	GLib2, SQLite3, libcurl, wolfSSL
+•	libncurses, wiringPi (cho LCD I2C)
+•	cJSON, jansson
+________________________________________
+3. Cài Đặt Snort 3 trên Raspberry Pi
+Bước 1: Cài các thư viện phụ thuộc :
+bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y build-essential cmake git libpcap-dev \
+libdnet-dev libdumbnet-dev libluajit-5.1-dev libssl-dev \
+    libnghttp2-dev libhwloc-dev libsqlite3-dev \
+    pkg-config autoconf libtool zlib1g-dev liblzma-dev \
+    libunwind-dev uuid-dev libglib2.0-dev libcurl4-openssl-dev \
+    libncurses5-dev python3 python3-pip
+Bước 2: Cài đặt libdaq
+bash
+git clone https://github.com/snort3/libdaq.git
+cd libdaq
+./bootstrap
+./configure
+make
+sudo make install
+sudo ldconfig
+cd ..
+Bước 3: Build và cài đặt Snort 3
+bash
+git clone https://github.com/snort3/snort3.git
+cd snort3
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+make -j$(nproc)
+sudo make install
+sudo ldconfig
+Bước 4: Kiểm tra cài đặt
+bash
+snort --version
+Kết quả mong đợi:
+   ,,_     -*> Snort++ <*-
+  o"  )~   Version 3.x.x.x
+   ''''    By Martin Roesch & The Snort Team
+________________________________________
+File cấu hình chính: /usr/local/etc/snort/snort.lua
+Tiến hành copy dán vào  snort.lua
+---------------------------------------------------------------------------
+-- Snort++ configuration
+---------------------------------------------------------------------------
+-- 1. configure defaults
+HOME_NET = 'any'
+EXTERNAL_NET = 'any'
+
+include 'snort_defaults.lua'
+
+-- 2. configure inspection
+stream = { }
+stream_ip = { }
+stream_icmp = { }
+stream_tcp = { }
+stream_udp = { }
+
+arp_spoof = { }
+dns = { }
+http_inspect = { }
+http2_inspect = { }
+ssh = { }
+ssl = { }
+telnet = { }
+
+-- OT/ICS protocols
+modbus = { }
+dnp3 = { }
+iec104 = { }
+s7commplus = { }
+
+-- 3. configure bindings
+wizard = default_wizard
+
+binder =
+{
+    { when = { proto = 'udp', ports = '53', role='server' },  use = { type = 'dns' } },
+    { when = { proto = 'tcp', ports = '53', role='server' },  use = { type = 'dns' } },
+    { when = { proto = 'tcp', ports = '502', role='server' }, use = { type = 'modbus' } },
+    { when = { proto = 'tcp', ports = '2404', role='server' }, use = { type = 'iec104' } },
+    { when = { service = 'http' },  use = { type = 'http_inspect' } },
+    { when = { service = 'http2' }, use = { type = 'http2_inspect' } },
+    { when = { service = 'ssh' },   use = { type = 'ssh' } },
+    { when = { service = 'ssl' },   use = { type = 'ssl' } },
+    { when = { service = 'dns' },   use = { type = 'dns' } },
+    { when = { service = 'modbus' }, use = { type = 'modbus' } },
+    { use = { type = 'wizard' } }
+}
+-- 5. configure detection
+references = default_references
+classifications = default_classifications
+
+-- Biến tùy chỉnh cho môi trường ICS/SCADA (chỉnh IP theo thực tế)
+default_variables.nets.TS_EWS = '[[192.168.1.88, 192.168.1.5]]'
+default_variables.nets.TS_CONTROLLER = { '192.168.1.2' }
+default_variables.ports.TS_PORT = '1502'
+ips =
+{
+    include = '/usr/local/etc/snort/default.rules',
+    rules = [[ include /usr/local/etc/snort/local.rules ]],
+    variables = default_variables
+}
+-- 7. configure outputs
+-- Hiển thị alert ra terminal (chương trình C đọc qua popen)
+alert_fast =
+{
+    file = false,
+    packet = false,
+}
+-- Xuất thêm JSON nếu cần đẩy lên SIEM
+alert_json =
+{
+    file = false,
+    fields = 'seconds action msg src_addr src_port dst_addr dst_port'
+}
+-- 8. configure tweaks
+if ( tweaks ~= nil ) then
+    include(tweaks .. '.lua')
+end
+5. Cấu Hình Network (Bridge cho IDS Mode)
+Cài đặt bridge-utils
+bash
+sudo apt install -y bridge-utils
+Tạo bridge thủ công (test)
+bash
+sudo ip link add name br0 type bridge
+sudo ip link set dev eth0 master br0
+sudo ip link set dev eth1 master br0
+sudo ip link set dev eth0 up
+sudo ip link set dev eth1 up
+sudo ip link set dev br0 up
+Xóa bridge khi chuyển sang IPS mode
+bash
+sudo ip link set dev br0 down
+sudo ip link set dev eth0 nomaster
+sudo ip link set dev eth1 nomaster
+sudo ip link del br0
+sudo ip link set dev eth0 up
+sudo ip link set dev eth1 up
+6. Cấu Hình Unix Domain Socket (UDS)
+File cấu hình socket: /home/antiddos/DDoS_V1/socket.conf
+/tmp/sysnetdef_data_antiddos
+/tmp/sysnetdef_data_ipsec
+/tmp/sysnetdef_data_idps
+Lưu ý: Dòng 3 (/tmp/sysnetdef_data_idps) là socket dành riêng cho IDPS, dùng để gửi log từ chương trình C sang Node.js server.
+Kiểm tra socket đang chạy
+bash
+ls -la /tmp/sysnetdef_data_*
+7. Cấu Hình Thư Mục Log IDPS
+bash
+sudo mkdir -p /home/antiddos/DDoS_V1/Log/Log_IDPS/idps_alert
+sudo mkdir -p /home/antiddos/DDoS_V1/Log/Log_IDPS/idps_drop
+sudo mkdir -p /home/antiddos/DDoS_V1/Log/Log_IDPS/idps_normal
+sudo chown -R antiddos:antiddos /home/antiddos/DDoS_V1/Log/
+Cấu trúc log:
+•	idps_alert/ — Lưu các sự kiện cảnh báo (Alert)
+•	idps_drop/ — Lưu các gói tin bị chặn (Drop, chỉ IPS mode)
+•	idps_normal/ — Lưu traffic bình thường
+Định dạng mỗi dòng log:
+timestamp|src_ip|dst_ip|src_port|dst_port|action|rule_name|severity|protocol|is_malware|packet_count|packet_size
+Ví dụ:
+2026-06-01 09:45:12|192.168.1.10|10.0.0.1|54321|80|Alert|Normal TCP Traffic|1|TCP|0|1|0
+8. Build Chương Trình C
+Cài thư viện bổ sung
+bash
+# WolfSSL
+sudo apt install -y libwolfssl-dev
+# WiringPi (cho LCD)
+git clone https://github.com/WiringPi/WiringPi.git
+cd WiringPi
+./build
+cd ..
+# cJSON
+sudo apt install -y libcjson-dev
+# jansson
+sudo apt install -y libjansson-dev
+# SQLite3
+sudo apt install -y libsqlite3-dev
+Lệnh compile (ví dụ)
+bash
+gcc -o gui main.c \
+    -lpthread -lm -lncurses -lcurl \
+    -lglib-2.0 -lsqlite3 -lcjson -ljansson \
+    -lwolfssl -lwiringPi \
+    $(pkg-config --cflags glib-2.0) \
+    -I/usr/local/include/wolfssl \
+    -L/usr/local/lib \
+    -o gui
+Cấu trúc thư mục project
+/home/antiddos/DDoS_V1/
+├── gui                     ← File binary sau khi build
+├── socket.conf             ← Cấu hình đường dẫn socket
+├── Setting/
+│   ├── config_auto_manual.conf
+│   ├── threshold_logfile.conf
+│   ├── time_counter.conf
+│   └── time_check_create_log.conf
+├── Log/
+│   ├── Log_Flood/
+│   ├── Log_Normal/
+│   └── Log_IDPS/
+│       ├── idps_alert/
+│       ├── idps_drop/
+│       └── idps_normal/
+└── HTTP_ip_table/
+    ├── http_IPV4.log
+    └── http_IPV6.log
+9. Chạy Chương Trình
+Chạy bình thường
+bash
+cd /home/antiddos/DDoS_V1
+sudo ./gui
+Kết quả khi khởi động thành công
+[CONFIG] socket_path = /tmp/sysnetdef_data_antiddos
+[CONFIG] socket_path_ipsec = /tmp/sysnetdef_data_ipsec
+Connected to server ipsec!
+Connected to UNIX server!
+[SUCCESS] Connected to Node.js UDS Server!
+[IDPS] Session log: 2026-06-01_09-39-37
+HelloGUI!
+Socket created
+Waiting for incoming connections...
+GUI ready to use...
+[IDPS] Thread started.
+Hello WSSL
+Run wolfSSL_CTX_new successfully
+Bật IDPS qua GUI
+Từ giao diện quản lý, gửi lệnh:
+IDPS_EN_DIS$1$IDPS_MODE$IDS$DONE$1$
+Hoặc IPS mode:
+IDPS_EN_DIS$1$IDPS_MODE$IPS$DONE$1$
+10. Các Lệnh Xử Lý Lỗi Thường Gặp
+Lỗi: Snort không dừng được / bị treo
+bash
+# Kill toàn bộ tiến trình snort
+sudo pkill -9 -f snort
+# Kiểm tra còn tiến trình snort không
+pgrep -f snort
+# Nếu vẫn còn, dùng lệnh mạnh hơn
+sudo kill -9 $(pgrep -f snort)
+Lỗi: Socket đang được sử dụng (Address already in use)
+bash
+# Kiểm tra port hoặc socket đang bị chiếm
+sudo lsof -U | grep sysnetdef
+# Xóa socket file cũ
+sudo rm -f /tmp/sysnetdef_data_idps
+sudo rm -f /tmp/sysnetdef_data_antiddos
+sudo rm -f /tmp/sysnetdef_data_ipsec
+# Kill tiến trình đang chiếm port 3367 (GUI TCP port)
+sudo kill -9 $(sudo lsof -t -i:3367)
+# Kill tiến trình đang chiếm port 443 (HTTPS/WolfSSL)
+sudo kill -9 $(sudo lsof -t -i:443)
+Lỗi: Bridge br0 đã tồn tại
+bash
+# Xóa bridge cũ trước khi tạo lại
+sudo ip link set dev br0 down 2>/dev/null
+sudo ip link set dev eth0 nomaster 2>/dev/null
+sudo ip link set dev eth1 nomaster 2>/dev/null
+sudo ip link del br0 2>/dev/null
+Lỗi: Permission denied khi chạy snort
+bash
+# Chạy với sudo hoặc thêm quyền
+sudo setcap cap_net_raw,cap_net_admin=eip /usr/local/bin/snort
+Reset toàn bộ và khởi động lại sạch
+bash
+# Bước 1: Kill tất cả
+sudo pkill -9 -f snort
+sudo pkill -9 -f gui
+sudo kill -9 $(sudo lsof -t -i:3367) 2>/dev/null
+sudo kill -9 $(sudo lsof -t -i:443) 2>/dev/null
+
+# Bước 2: Xóa socket cũ
+sudo rm -f /tmp/sysnetdef_data_*
+
+# Bước 3: Xóa bridge cũ
+sudo ip link set dev br0 down 2>/dev/null
+sudo ip link del br0 2>/dev/null
+
+# Bước 4: Chạy lại
+cd /home/antiddos/DDoS_V1
+sudo ./gui
+11. Luồng Hoạt Động IDPS
+GUI gửi lệnh
+    │
+    ▼
+process_key() xử lý IDPS_EN_DIS / IDPS_MODE
+    │
+    ▼
+g_snort_enabled = 1, g_mode = "IDS" hoặc "IPS"
+    │
+    ▼
+Khi nhận DONE$ → g_pending_start = 1 → snort_restart()
+    │
+    ├── IDS Mode → setup_bridge() → snort chạy trên br0
+    └── IPS Mode → teardown_bridge() → snort chạy inline eth0:eth1
+    │
+    ▼
+idps_thread() đọc output của Snort qua popen()
+    │
+    ├── Dòng chứa "[**]" → phát hiện xâm nhập
+    ├── Phân loại: Normal / Alert / Drop
+    └── log_event_to_uds() → ghi file log + gửi qua UDS socket
+    │
+    ▼
+Node.js server nhận dữ liệu từ /tmp/sysnetdef_data_idps
+    │
+    ▼
+Hiển thị lên giao diện web
+12. Theo Dõi Log Thời Gian Thực
+bash
+# Xem log alert
+tail -f /home/antiddos/DDoS_V1/Log/Log_IDPS/idps_alert/*.log
+# Xem log drop (IPS mode)
+tail -f /home/antiddos/DDoS_V1/Log/Log_IDPS/idps_drop/*.log
+# Xem log normal
+tail -f /home/antiddos/DDoS_V1/Log/Log_IDPS/idps_normal/*.log
+# Xem output trực tiếp của tiến trình gui
+sudo journalctl -f -u sysnetdef 2>/dev/null || sudo ./gui 2>&1 | tee /tmp/gui_debug.log
+13. Thống Kê Packet (In ra màn hình)
+Chương trình tự động in thống kê mỗi khi Snort kết thúc phiên:
+=====================================
+  Total received : 1500
+  Total dropped  : 45  (3.00%)
+  Total passed   : 1455 (97.00%)
+=====================================
+Trong quá trình chạy, mỗi gói tin xử lý in dòng:
+[STATS] recv=1500     drop=45       pass=1455
+14. Lưu Ý Quan Trọng
+1.	Chạy với quyền root (sudo) — Snort cần quyền raw socket để bắt gói tin.
+2.	IPS mode yêu cầu 2 card mạng — eth0 và eth1 phải được kết nối vào đúng vị trí trong mạng (inline).
+3.	IDS mode dùng bridge — eth0 và eth1 ghép vào br0, lưu lượng vẫn đi qua bình thường.
+4.	Socket IDPS cố định tại /tmp/sysnetdef_data_idps — Nếu Node.js server chưa tạo socket này, chương trình sẽ tự retry khi gửi log.
+5.	Mỗi phiên chạy tạo một file log riêng — Tên file theo format YYYY-MM-DD_HH-MM-SS.log được tạo khi chương trình khởi động (init_idps_session_log()).
+6.	Khi thay đổi Mode (IDS/IPS) — Phải gửi DONE$1$ sau khi set mode để trigger restart Snort, không restart giữa chừng.
