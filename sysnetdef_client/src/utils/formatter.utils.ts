@@ -131,36 +131,50 @@ export const profileTimeFormatter = (timeString: string | null | undefined): str
 /**
  * Hàm định dạng thời gian từ timestamp (Dùng cho biểu đồ)
  */
-export const timeFormatter = (timeString: string | number | undefined): string => {
+export const timeFormatter = (timeInput: string | number | undefined): string => {
   try {
-    if (!timeString) return "Chưa sử dụng";
-    
-    let timestamp = typeof timeString === "string" ? parseInt(timeString) : timeString;
+    if (!timeInput) return "Chưa sử dụng";
 
-    // KIỂM TRA ĐƠN VỊ: 
-    // Nếu timestamp < 10000000000 (10 chữ số), nó đang là Giây.
-    // Ta phải nhân 1000 để đưa về Miligiây cho đúng chuẩn JavaScript.
-    if (timestamp < 10000000000) {
-      timestamp *= 1000;
+    let date: Date;
+
+    if (typeof timeInput === "number") {
+      let timestamp = timeInput;
+      if (timestamp < 10000000000) {
+        timestamp *= 1000;
+      }
+      date = new Date(timestamp);
+    } else if (typeof timeInput === "string") {
+      const trimmed = timeInput.trim();
+      // Nếu là chuỗi số thuần túy (e.g. "1712345678")
+      if (/^\d+$/.test(trimmed)) {
+        let timestamp = parseInt(trimmed, 10);
+        if (timestamp < 10000000000) {
+          timestamp *= 1000;
+        }
+        date = new Date(timestamp);
+      } else {
+        // Chuỗi dạng "YYYY-MM-DD HH:mm:ss" hoặc ISO string
+        const normalized = trimmed.includes("T") ? trimmed : trimmed.replace(" ", "T");
+        date = new Date(normalized);
+      }
+    } else {
+      return "Dữ liệu thời gian lỗi";
     }
 
-    const time = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+      return String(timeInput);
+    }
 
-    // Kiểm tra Date hợp lệ
-    if (isNaN(time.getTime())) return "Dữ liệu thời gian lỗi";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const day = pad(date.getDate());
+    const month = pad(date.getMonth() + 1);
+    const year = date.getFullYear();
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+    const seconds = pad(date.getSeconds());
 
-    return new Intl.DateTimeFormat("vi-VN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false, 
-      // timeZone: "UTC", 
-      timeZone: "Asia/Ho_Chi_Minh", 
-    }).format(time);
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   } catch (error) {
-    return "Dữ liệu thời gian lỗi";
+    return String(timeInput || "Dữ liệu thời gian lỗi");
   }
 };

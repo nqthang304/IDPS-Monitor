@@ -1,11 +1,12 @@
 
+import React from 'react';
 import { Tabs } from "antd";
 import styles from './logs.module.css';
 
 import PageTitle from '@/application/layout/pageTitle/pageTitle';
 import LogSetting from "@/features/modules/management/logs_page/logSetting/logSetting";
 import IDPSLogs from "@/features/modules/management/logs_page/idpsLog/idpsLog";
-import DeviceLogs from "@/features/modules/management/logs_page/deviceLog/deviceLog";
+import SystemLog from "@/features/modules/management/logs_page/systemLog/systemLog";
 
 const Logs: React.FC = () => {
     return (
@@ -31,8 +32,8 @@ const Logs: React.FC = () => {
                     },
                     {
                         key: "deviceLogs",
-                        label: "Device logs",
-                        children: <DeviceLogs />,
+                        label: "System activity",
+                        children: <SystemLog />,
                     },
                 ]}>
             </Tabs>

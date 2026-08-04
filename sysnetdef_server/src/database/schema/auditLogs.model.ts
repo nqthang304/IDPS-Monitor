@@ -6,7 +6,7 @@ export const auditLogs = sqliteTable('audit_logs', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   username: text('username').notNull(),
-  time: text('time').default(sql`(CURRENT_TIMESTAMP)`),
+  time: text('time').default(sql`(datetime('now', '+7 hours'))`),
   action: text('action').notNull(),
   status: text('status').notNull(),
   result: text('result')

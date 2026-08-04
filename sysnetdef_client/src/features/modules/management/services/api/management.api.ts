@@ -76,4 +76,37 @@ export const logApi = {
             throw error.response?.data || { message: "Lỗi hệ thống khi tải file log" };
         }
     },
+
+    getAuditLogs: async (params?: { page?: number; limit?: number }): Promise<ApiResponse<any>> => {
+        try {
+            logger.debug('LOGS_MANAGER', 'Fetching Audit Logs data...');
+            const response = await axiosClient.get('audit-logs', { params });
+            return response.data;
+        } catch (error: any) {
+            logger.error('LOGS_MANAGER', `Failed to fetch Audit Logs: ${error.message || 'System Error'}`);
+            throw error.response?.data || { message: "Lỗi hệ thống khi lấy danh sách audit logs" };
+        }
+    },
+
+    deleteAuditLogsByIds: async (ids: React.Key[]): Promise<ApiResponse<any>> => {
+        try {
+            logger.info('LOGS_MANAGER', `Deleting audit logs by IDs: ${JSON.stringify(ids)}`);
+            const response = await axiosClient.post('audit-logs/delete-by-ids', { ids });
+            return response.data;
+        } catch (error: any) {
+            logger.error('LOGS_MANAGER', `Failed to delete audit logs: ${error.message || 'System Error'}`);
+            throw error.response?.data || { message: "Lỗi hệ thống khi xóa log" };
+        }
+    },
+
+    deleteAuditLogsByTimeRange: async (from: string, to: string): Promise<ApiResponse<any>> => {
+        try {
+            logger.info('LOGS_MANAGER', `Deleting audit logs between ${from} and ${to}`);
+            const response = await axiosClient.post('audit-logs/delete-by-range', { from, to });
+            return response.data;
+        } catch (error: any) {
+            logger.error('LOGS_MANAGER', `Failed to delete audit logs by range: ${error.message || 'System Error'}`);
+            throw error.response?.data || { message: "Lỗi hệ thống khi xóa log theo khoảng thời gian" };
+        }
+    },
 };
