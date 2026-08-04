@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { UserRepository } from "../../../../database/repository/user.repository";
 import { ENV } from "../../../../core/config/env";
 import { AuditLogger } from "../../../../shared/utils/auditLogger.utils";
+import { emailNotificationService } from "@/shared/services/emailNotification.service";
 
 export class AuthService {
   private userRepository = new UserRepository();
@@ -34,6 +35,12 @@ export class AuthService {
 
     // 4. Record audit log success
     await AuditLogger.logLogin(user.id, username, 'SUCCESS', 'Login successful');
+
+    // 5. Send notification email to subscribed users
+    emailNotificationService.notifySubscribedUsers(
+      "User Login Event",
+      `User <b>${username}</b> (Role: <b>${user.role}</b>) has successfully logged into the system.`
+    );
 
     const { password: _, ...userWithoutPassword } = user;
     return { user: userWithoutPassword, token };

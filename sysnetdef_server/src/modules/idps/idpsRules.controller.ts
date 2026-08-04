@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { IdpsRuleRequestService } from "./idpsRules.request.service";
 import { logger } from "@/shared/utils/logger.utils";
 import { AuditLogger } from "@/shared/utils/auditLogger.utils";
+import { emailNotificationService } from "@/shared/services/emailNotification.service";
 
 export class IdpsRuleController {
   private idpsRuleRequestService = new IdpsRuleRequestService();
@@ -76,6 +77,11 @@ export class IdpsRuleController {
       logger.info("IDPS_CONTROLLER", `State change command (Active: ${active}, Mode: ${mode}) has been sent to the device.`);
 
       await AuditLogger.logUpdateSystemStatus(userId, username, active, mode, 'SUCCESS');
+
+      emailNotificationService.notifySubscribedUsers(
+        "IDPS Mode & Status Updated",
+        `User <b>${username}</b> updated IDPS Status to <b>${active ? 'ON' : 'OFF'}</b> and Mode to <b>${mode.toUpperCase()}</b>.`
+      );
 
       return res.status(202).json({
         success: true,

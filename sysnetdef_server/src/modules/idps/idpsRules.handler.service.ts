@@ -65,20 +65,20 @@ export class IdpsRuleHandlerService {
       return {
         success: true,
         message: isRulesReloaded 
-          ? "Đã đồng bộ cấu hình và nạp lại luật thành công." 
-          : "Cấu hình IDPS đã được cập nhật thành công.",
+          ? "Configuration synchronized and rules reloaded successfully." 
+          : "IDPS configuration updated successfully.",
         event: isRulesReloaded ? "IDPS_RULES_RELOADED" : "IDPS_SYNC_SUCCESS",
         data: { raw: response }
       };
 
     } catch (error: any) {
       logger.error("IDPS_HANDLER_SERVICE", `Critical error: ${error.message}`);
-      return { success: false, message: "Lỗi xử lý phản hồi phần cứng.", event: "IDPS_HANDLER_CRASH" };
+      return { success: false, message: "Error processing hardware response.", event: "IDPS_HANDLER_CRASH" };
     }
   }
 
   private handleError(response: string) {
     logger.error("IDPS_HANDLER_SERVICE", `Hardware error: ${response}`);
-    return { success: false, message: `Thiết bị báo lỗi: ${response}`, event: "IDPS_SYNC_ERROR" };
+    return { success: false, message: `Device reported error: ${response}`, event: "IDPS_SYNC_ERROR" };
   }
 }

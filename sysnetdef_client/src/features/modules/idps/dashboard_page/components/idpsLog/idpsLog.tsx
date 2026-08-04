@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Table, Select } from 'antd';
+import React, { useMemo } from 'react';
+import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import styles from './idpsLog.module.css';
 import { useIdpsStore, type ExtendedIDPSPacket } from '@/features/modules/idps/dashboard_page/store/idpsStore';
@@ -7,7 +7,6 @@ import { useResponsiveFont } from '@/hooks/useResponsiveFont';
 
 const IdpsLogs: React.FC = () => {
   const logs = useIdpsStore((state) => state.logs);
-  const [timeRange, setTimeRange] = useState<string>('24h');
   const baseFontSize = useResponsiveFont();
 
   const columns: ColumnsType<ExtendedIDPSPacket> = useMemo(() => {
@@ -91,20 +90,6 @@ const IdpsLogs: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.headerControls}>
-        <Select
-          className={styles.timeFilterSelect}
-          value={timeRange}
-          onChange={setTimeRange}
-          options={[
-            { value: '1h', label: 'Last 1 hour' },
-            { value: '24h', label: 'Last 24 hours' },
-            { value: '7d', label: 'Last 7 days' },
-            { value: 'all', label: 'All time' },
-          ]}
-        />
-      </div>
-
       <Table
         columns={columns}
         dataSource={logs}
