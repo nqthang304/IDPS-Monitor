@@ -5,28 +5,14 @@ import { authenticate } from "@/shared/middleware/auth.middleware";
 const router = Router();
 const storageController = new DeviceStorageController();
 
-// --- ROUTES QUẢN LÝ THIẾT BỊ & LƯU TRỮ ---
+// --- ROUTES QUẢN LÝ LƯU TRỮ VÀ CẤU HÌNH ---
 
 /**
- * @route   GET /api/device/resources
- * @desc    Lấy thông tin tài nguyên hệ thống (CPU, RAM, Uptime, Nhiệt độ)
- * @access  Private
- */
-router.get("/resources", authenticate, storageController.getResources);
-
-/**
- * @route   GET /api/device/disk-usage
+ * @route   GET /api/device-storage/disk-usage
  * @desc    Lấy thông tin dung lượng ổ đĩa và chi tiết các file logs
  * @access  Private
  */
 router.get("/disk-usage", authenticate, storageController.getDiskStatus);
-
-/**
- * @route   PATCH /api/device/disk-settings
- * @desc    Cập nhật cấu hình ngưỡng đĩa và chế độ tự động xóa logs
- * @access  Private
- */
-router.patch("/disk-settings", authenticate, storageController.updateSettings);
 
 /**
  * @route   GET /api/device-storage/logs-retention

@@ -11,7 +11,6 @@ router.put("/profile", authenticate, userController.updateProfile);
 
 // User Management CRUD endpoints
 router.get("/", authenticate, userController.getAllUsers);
-router.get("/:id", authenticate, userController.getUserById);
 router.post("/", authenticate, userController.createUser);
 router.put("/:id", authenticate, userController.updateUser);
 router.delete("/:id", authenticate, userController.deleteUser);

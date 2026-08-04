@@ -44,17 +44,6 @@ export class UserController {
     }
   };
 
-  getUserById = async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id, 10);
-      const user = await this.userService.getUserById(id);
-      return res.status(200).json({ success: true, data: user });
-    } catch (error: any) {
-      logger.error("USER_CONTROLLER", `Get user by ID failed: ${error.message}`);
-      return res.status(400).json({ success: false, message: error.message });
-    }
-  };
-
   createUser = async (req: Request, res: Response) => {
     try {
       const newUser = await this.userService.createUser(req.body);

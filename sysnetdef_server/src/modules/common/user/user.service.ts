@@ -13,15 +13,6 @@ export class UserService {
     return userWithoutPassword;
   }
 
-  async getUserById(id: number) {
-    const user = await this.userRepository.findById(id);
-    if (!user) {
-      throw new Error("User not found");
-    }
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
-  }
-
   async getAllUsers() {
     return await this.userRepository.getAllUsers();
   }
