@@ -76,8 +76,8 @@ export class DeviceStorageController {
    */
   updateLogsRetention = async (req: Request, res: Response) => {
     try {
-      const { usageLimit, autoClean, fileRotation } = req.body;
-      const data = await this.storageService.updateLogsRetention({ usageLimit, autoClean, fileRotation });
+      const { usageLimit, autoClean } = req.body;
+      const data = await this.storageService.updateLogsRetention({ usageLimit, autoClean });
       return res.status(200).json({ success: true, status: 200, message: "Logs retention updated successfully", data });
     } catch (error: any) {
       logger.error("STORAGE_CONTROLLER", `Update logs retention failed: ${error.message}`);

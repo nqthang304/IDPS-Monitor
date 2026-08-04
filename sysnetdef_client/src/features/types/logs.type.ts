@@ -11,7 +11,6 @@ export interface logUsage {
 export interface logsRetention {
     usageLimit: number,
     autoClean: boolean,
-    fileRotation: boolean,
 };
 
 export interface activitySettings {

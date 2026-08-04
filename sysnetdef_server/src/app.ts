@@ -18,6 +18,7 @@ import auditLogRoutes from "#/interfaces/nbi/http/auditLog.route";
 
 import { notificationWS } from "#/interfaces/nbi/ws/notification.ws";
 import { idpsCapture } from "#/interfaces/sbi/stream/idps.stream";
+import { auditLogCleanerService } from "#/modules/common/logs/auditLogCleaner.service";
 
 import { logger } from "@/shared/utils/logger.utils";
 
@@ -107,6 +108,12 @@ export const createApp = () => {
     logger.success("APP", "SBI Stream service is live");
   } catch (error: any) {
     logger.error("APP", `Failed to start SBI Stream service: ${error.message}`);
+  }
+  // Audit Logs Auto Cleaner Service
+  try {
+    auditLogCleanerService.startAutoCleanCron();
+  } catch (error: any) {
+    logger.error("APP", `Failed to start Audit Logs Auto Cleaner: ${error.message}`);
   }
 
   // --- ROUTES ---

@@ -11,27 +11,24 @@ interface LogRetentionProps {
 const LogRetention: React.FC<LogRetentionProps> = ({ data, onSave}) => {
     const [usageLimit, setUsageLimit] = useState(data?.usageLimit ?? 0 );
     const [autoClean, setAutoClean] = useState(data?.autoClean ?? false);
-    const [fileRotation, setFileRotation] = useState(data?.fileRotation ?? false);
 
     useEffect(() => {
         if (data) {
             setUsageLimit(data.usageLimit);
             setAutoClean(data.autoClean);
-            setFileRotation(data.fileRotation);
         }
     }, [data]);
 
     const isChanged = useMemo(() => {
         return (
             usageLimit !== (data?.usageLimit ?? 0) ||
-            autoClean !== (data?.autoClean ?? false) ||
-            fileRotation !== (data?.fileRotation ?? false)
+            autoClean !== (data?.autoClean ?? false)
         );
-    }, [usageLimit, autoClean, fileRotation, data]);
+    }, [usageLimit, autoClean, data]);
 
     const handleInternalSave = () => {
         if (isChanged) {
-            onSave({ usageLimit, autoClean, fileRotation });
+            onSave({ usageLimit, autoClean });
         }
     };
 
@@ -53,9 +50,7 @@ const LogRetention: React.FC<LogRetentionProps> = ({ data, onSave}) => {
                 <Slider 
                     value={usageLimit} 
                     onChange={(val) => setUsageLimit(val)}
-                    // CẬP NHẬT Ở ĐÂY: Hiển thị tooltip kèm ký tự %
                     tooltip={{ 
-                        // open: true, 
                         formatter: (value) => `${value}%`,
                         placement: 'top'
                     }}
@@ -89,15 +84,6 @@ const LogRetention: React.FC<LogRetentionProps> = ({ data, onSave}) => {
                     checked={autoClean} 
                     onChange={(checked) => setAutoClean(checked)}
                     style={{ backgroundColor: autoClean ? '#49cc19' : undefined }}
-                />
-            </div>
-
-            <div className={styles.settingRow}>
-                <span className={styles.label}>Logs file rotation</span>
-                <Switch 
-                    checked={fileRotation} 
-                    onChange={(checked) => setFileRotation(checked)}
-                    style={{ backgroundColor: fileRotation ? '#49cc19' : undefined }}
                 />
             </div>
         </div>

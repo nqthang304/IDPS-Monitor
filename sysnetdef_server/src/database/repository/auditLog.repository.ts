@@ -1,6 +1,6 @@
 import { db } from "../../core/database/drizzle";
 import { auditLogs } from "../schema/auditLogs.model";
-import { desc, inArray, and, gte, lte } from "drizzle-orm";
+import { desc, inArray, and, gte, lte, lt } from "drizzle-orm";
 
 export interface CreateAuditLogDto {
   userId: number;
@@ -69,5 +69,16 @@ export class AuditLogRepository {
     const normalizedFrom = normalizeDbTime(fromTime);
     const normalizedTo = normalizeDbTime(toTime);
     return await db.delete(auditLogs).where(and(gte(auditLogs.time, normalizedFrom), lte(auditLogs.time, normalizedTo))).run();
+  }
+
+  async deleteOlderThanDays(days: number) {
+    if (days <= 0) return 0;
+    const now = new Date();
+    const gmt7Now = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    const cutoffDate = new Date(gmt7Now.getTime() - days * 24 * 60 * 60 * 1000);
+    const cutoffTimeStr = cutoffDate.toISOString().replace('T', ' ').substring(0, 19);
+
+    const result = await db.delete(auditLogs).where(lt(auditLogs.time, cutoffTimeStr)).run();
+    return result.changes ?? 0;
   }
 }

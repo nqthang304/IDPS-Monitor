@@ -10,7 +10,6 @@ export class SystemSettingsRepository {
         id: 1,
         logsUsageLimit: 80,
         autoCleanLogs: true,
-        logsFileRotation: true,
         autoCleanActive: true,
         cleanActiveOlderThan: 30,
       }).run();
@@ -19,12 +18,11 @@ export class SystemSettingsRepository {
     return settings!;
   }
 
-  async updateLogsRetention(payload: { usageLimit?: number; autoClean?: boolean; fileRotation?: boolean }) {
+  async updateLogsRetention(payload: { usageLimit?: number; autoClean?: boolean }) {
     await this.getSettings(); // Ensures record exists
     const updateData: Partial<typeof systemSettings.$inferInsert> = {};
     if (payload.usageLimit !== undefined) updateData.logsUsageLimit = payload.usageLimit;
     if (payload.autoClean !== undefined) updateData.autoCleanLogs = payload.autoClean;
-    if (payload.fileRotation !== undefined) updateData.logsFileRotation = payload.fileRotation;
 
     await db.update(systemSettings).set(updateData).where(eq(systemSettings.id, 1)).run();
     return this.getSettings();

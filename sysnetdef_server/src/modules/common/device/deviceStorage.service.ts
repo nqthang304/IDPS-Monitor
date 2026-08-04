@@ -8,6 +8,7 @@ import { logger } from "@/shared/utils/logger.utils";
 import { HardwareBridge, SystemAction } from "#/interfaces/sbi/tcp/mainc.bridge";
 import { getFileDetails } from '@/shared/utils/device.utils';
 import { SystemSettingsRepository } from '#/database/repository/systemSettings.repository';
+import { auditLogCleanerService } from '#/modules/common/logs/auditLogCleaner.service';
 
 export class DeviceStorageService {
   private settingsRepository = new SystemSettingsRepository();
@@ -97,16 +98,18 @@ export class DeviceStorageService {
     return {
       usageLimit: settings.logsUsageLimit ?? 80,
       autoClean: settings.autoCleanLogs ?? true,
-      fileRotation: settings.logsFileRotation ?? true,
     };
   }
 
-  async updateLogsRetention(payload: { usageLimit?: number; autoClean?: boolean; fileRotation?: boolean }) {
+  async updateLogsRetention(payload: { usageLimit?: number; autoClean?: boolean }) {
     const updated = await this.settingsRepository.updateLogsRetention(payload);
+
+    // Kích hoạt ngay kiểm tra dọn dẹp dung lượng đĩa khi cập nhật cài đặt Logs Retention
+    auditLogCleanerService.runLogsRetentionCleanJob();
+
     return {
       usageLimit: updated.logsUsageLimit ?? 80,
       autoClean: updated.autoCleanLogs ?? true,
-      fileRotation: updated.logsFileRotation ?? true,
     };
   }
 
@@ -120,6 +123,10 @@ export class DeviceStorageService {
 
   async updateActivitySettings(payload: { cleanActive?: boolean; cleanTime?: number }) {
     const updated = await this.settingsRepository.updateActivitySettings(payload);
+    
+    // Tự động kích hoạt công việc dọn dẹp audit log cũ ngay khi cấu hình thay đổi
+    auditLogCleanerService.runAutoCleanJob();
+
     return {
       cleanActive: updated.autoCleanActive ?? true,
       cleanTime: updated.cleanActiveOlderThan ?? 30,

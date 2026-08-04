@@ -59,7 +59,6 @@ export const initializeData = () => {
         id INTEGER PRIMARY KEY DEFAULT 1,
         logs_usage_limit INTEGER DEFAULT 80,
         auto_clean_logs INTEGER DEFAULT 1,
-        logs_file_rotation INTEGER DEFAULT 1,
         auto_clean_active INTEGER DEFAULT 1,
         clean_active_older_than INTEGER DEFAULT 30
       );
