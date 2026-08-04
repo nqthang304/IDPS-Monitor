@@ -19,6 +19,9 @@ export const LoginForm: React.FC = () => {
       const response = await authApi.login(values);
       if (response.success && response.data) {
         localStorage.setItem('access_token', response.data.token);
+        if (response.data.user?.role) {
+          localStorage.setItem('user_role', response.data.user.role);
+        }
         connectSocket(response.data.token);
         navigate('/dashboard');
       } else {

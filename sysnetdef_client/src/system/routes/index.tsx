@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
 //loaders
-import { protected_loader, public_loader } from "@/application/loader/auth.loader";
+import { protected_loader, public_loader, admin_protected_loader } from "@/application/loader/auth.loader";
 import { idpsRulesLoader } from "@/features/modules/idps/services/loader/idpsGetRules.loader";
 
 //pages
@@ -57,9 +57,10 @@ export const router = createBrowserRouter([
                 element: <IdpsAnalyze />
             },
 
-            // 6. Management
+            // 6. Management (Chỉ Admin mới có quyền truy cập)
             {
                 path: "management",
+                loader: admin_protected_loader,
                 children: [
                     {
                         index: true,
@@ -67,11 +68,13 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "logs",
-                        element: <Logs />
+                        element: <Logs />,
+                        loader: admin_protected_loader
                     },
                     {
                         path: "users",
-                        element: <Users />
+                        element: <Users />,
+                        loader: admin_protected_loader
                     }
                 ]
             },

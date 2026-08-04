@@ -59,6 +59,7 @@ const HoverInlineSidebar: React.FC = () => {
       content: "Are you sure you want to logout?",
       onOk: () => {
         localStorage.removeItem('access_token');
+        localStorage.removeItem('user_role');
         disconnectSocket();
         window.location.href = '/login';
       },
@@ -75,8 +76,10 @@ const HoverInlineSidebar: React.FC = () => {
     }
   };
 
+  const userRole = localStorage.getItem('user_role') || 'user';
+
   // Cấu trúc menu theo router mới
-  const menuItems = [
+  const rawMenuItems = [
     {
       key: '/dashboard',
       icon: <DashboardOutlined />,
@@ -111,6 +114,14 @@ const HoverInlineSidebar: React.FC = () => {
       onClick: () => setOpenKeys([]),
     },
   ];
+
+  // Nếu không phải Admin, ẩn mục MANAGEMENT khỏi Menu
+  const menuItems = useMemo(() => {
+    if (userRole !== 'admin') {
+      return rawMenuItems.filter(item => item.key !== 'management');
+    }
+    return rawMenuItems;
+  }, [userRole]);
 
   return (
     <Sider
