@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { IdpsRuleRequestService } from "./idpsRules.request.service";
 import { logger } from "@/shared/utils/logger.utils";
+import { AuditLogger } from "@/shared/utils/auditLogger.utils";
 
 export class IdpsRuleController {
   private idpsRuleRequestService = new IdpsRuleRequestService();
@@ -58,9 +59,11 @@ export class IdpsRuleController {
    * Cập nhật trạng thái hệ thống IDPS (Active/Mode)
    */
   updateIdpsStatus = async (req: Request, res: Response) => {
-    try {
-      const { active, mode } = req.body;
+    const userId = (req as any).user?.id || 1;
+    const username = (req as any).user?.username || 'admin';
+    const { active, mode } = req.body;
 
+    try {
       if (typeof active !== "boolean" || !mode) {
         return res.status(400).json({
           success: false,
@@ -72,10 +75,12 @@ export class IdpsRuleController {
 
       logger.info("IDPS_CONTROLLER", `State change command (Active: ${active}, Mode: ${mode}) has been sent to the device.`);
 
+      await AuditLogger.logUpdateSystemStatus(userId, username, active, mode, 'SUCCESS');
+
       return res.status(202).json({
         success: true,
         message: bridgeResponse.message || "The request has been sent to device. Please monitor for system notifications.",
-        currentAction: bridgeResponse.currentAction, // Bổ sung action hiện tại
+        currentAction: bridgeResponse.currentAction,
         data: {
           requestedStatus: active ? 'ON' : 'OFF',
           requestedMode: mode.toUpperCase()
@@ -83,6 +88,7 @@ export class IdpsRuleController {
       });
 
     } catch (error: any) {
+      await AuditLogger.logUpdateSystemStatus(userId, username, active, mode, 'FAILED', error.message);
       return this.handleError(res, error, "IDPS_CONTROLLER_UPDATE_STATUS");
     }
   };
@@ -134,18 +140,23 @@ export class IdpsRuleController {
    * Thêm mới rule: POST /idps-rules
    */
   create = async (req: Request, res: Response) => {
+    const userId = (req as any).user?.id || 1;
+    const username = (req as any).user?.username || 'admin';
     try {
       const result = await this.idpsRuleRequestService.createRule(req.body);
 
       logger.success("IDPS_CONTROLLER", `Rule ${req.body.ruleId} created manually`);
 
+      await AuditLogger.logCreateRule(userId, username, req.body.ruleId, 'SUCCESS');
+
       return res.status(201).json({
         success: true,
         message: result.message || "New rule added successfully.",
-        currentAction: (result as any).currentAction || null, // Nếu rule active, sẽ có action từ bridge
+        currentAction: (result as any).currentAction || null,
         data: result
       });
     } catch (error: any) {
+      await AuditLogger.logCreateRule(userId, username, req.body?.ruleId || 0, 'FAILED', error.message);
       return this.handleError(res, error, "IDPS_CONTROLLER_CREATE");
     }
   };
@@ -154,17 +165,9 @@ export class IdpsRuleController {
    * Import từ file .rules
    */
   bulkImport = async (req: Request, res: Response) => {
+    const userId = (req as any).user?.id || 1;
+    const username = (req as any).user?.username || 'admin';
     try {
-      // --- DEBUG LOG ---
-      console.log("=== DEBUG BULK IMPORT ===");
-      console.log("Headers:", req.headers['content-type']);
-      console.log("File Object:", req.file);
-
-      if (req.file) {
-        console.log("File Name:", req.file.originalname);
-        console.log("Buffer Size:", req.file.buffer?.length);
-      }
-
       if (!req.file) {
         throw new Error("The .rules file was not found. Please upload a file with the .rules extension.");
       }
@@ -172,16 +175,19 @@ export class IdpsRuleController {
       const fileContent = req.file.buffer.toString('utf-8');
       const result = await this.idpsRuleRequestService.bulkImportFromRulesFile(fileContent);
 
+      const importedCount = (result as any).count || 0;
       logger.success("IDPS_CONTROLLER", `Bulk imported rules from file ${req.file.originalname}`);
+
+      await AuditLogger.logImportRules(userId, username, importedCount, 'SUCCESS', `File: ${req.file.originalname}`);
 
       return res.status(200).json({
         success: true,
         message: result.message || `Rules have been successfully imported from the file and the device has been synchronized.`,
-        currentAction: result.currentAction, // Bổ sung action
-        importedCount: (result as any).count || 0
+        currentAction: result.currentAction,
+        importedCount
       });
     } catch (error: any) {
-      console.error("Stack trace:", error.stack);
+      await AuditLogger.logImportRules(userId, username, 0, 'FAILED', error.message);
       return this.handleError(res, error, "IDPS_CONTROLLER_IMPORT");
     }
   };
@@ -190,8 +196,10 @@ export class IdpsRuleController {
    * Cập nhật rule: PATCH /idps-rules/:ruleId
    */
   update = async (req: Request, res: Response) => {
+    const userId = (req as any).user?.id || 1;
+    const username = (req as any).user?.username || 'admin';
+    const ruleId = parseInt(req.params.ruleId);
     try {
-      const ruleId = parseInt(req.params.ruleId);
       if (isNaN(ruleId)) {
         throw new Error("Invalid Rule ID.");
       }
@@ -200,12 +208,15 @@ export class IdpsRuleController {
 
       logger.success("IDPS_CONTROLLER", `Rule ${ruleId} updated`);
 
+      await AuditLogger.logUpdateRule(userId, username, ruleId, 'SUCCESS');
+
       return res.status(200).json({
         success: true,
         message: result.message || "The rule was updated and synchronized successfully.",
-        currentAction: result.currentAction // Bổ sung action
+        currentAction: result.currentAction
       });
     } catch (error: any) {
+      await AuditLogger.logUpdateRule(userId, username, isNaN(ruleId) ? 0 : ruleId, 'FAILED', error.message);
       return this.handleError(res, error, "IDPS_CONTROLLER_UPDATE");
     }
   };
@@ -214,18 +225,22 @@ export class IdpsRuleController {
    * Xóa rule
    */
   remove = async (req: Request, res: Response) => {
+    const userId = (req as any).user?.id || 1;
+    const username = (req as any).user?.username || 'admin';
+    let targetIds: number[] = [];
     try {
       const { ids } = req.body;
       const ruleIdParam = req.params.ruleId;
 
       if (ids && Array.isArray(ids) && ids.length > 0) {
+        targetIds = ids;
         await this.idpsRuleRequestService.deleteRules(ids);
         logger.info("IDPS_CONTROLLER", `Bulk deleted ${ids.length} rules`);
       }
       else if (ruleIdParam) {
         const ruleId = parseInt(ruleIdParam);
         if (isNaN(ruleId)) throw new Error("Invalid Rule ID.");
-
+        targetIds = [ruleId];
         await this.idpsRuleRequestService.deleteRules(ruleId);
         logger.info("IDPS_CONTROLLER", `Deleted rule ${ruleId}`);
       }
@@ -233,11 +248,14 @@ export class IdpsRuleController {
         throw new Error("Please provide the ID(s) to be deleted.");
       }
 
+      await AuditLogger.logDeleteRules(userId, username, targetIds, 'SUCCESS');
+
       return res.status(200).json({
         success: true,
         message: "Data deletion successful."
       });
     } catch (error: any) {
+      await AuditLogger.logDeleteRules(userId, username, targetIds, 'FAILED', error.message);
       return this.handleError(res, error, "IDPS_CONTROLLER_DELETE");
     }
   };
@@ -246,9 +264,11 @@ export class IdpsRuleController {
    * Cập nhật trạng thái hàng loạt
    */
   bulkUpdateStatus = async (req: Request, res: Response) => {
-    try {
-      const { ids, status } = req.body;
+    const userId = (req as any).user?.id || 1;
+    const username = (req as any).user?.username || 'admin';
+    const { ids, status } = req.body;
 
+    try {
       if (!Array.isArray(ids) || ids.length === 0) {
         return res.status(400).json({
           success: false,
@@ -267,13 +287,16 @@ export class IdpsRuleController {
 
       logger.success("IDPS_CONTROLLER", `Bulk updated rules to status: ${status}`);
 
+      await AuditLogger.logBulkToggleRuleStatus(userId, username, ids, status, 'SUCCESS');
+
       return res.status(200).json({
         success: true,
         message: result.message || `The rule status has been updated and the system has been synchronized.`,
-        currentAction: result.currentAction, // Bổ sung action
+        currentAction: result.currentAction,
         data: result
       });
     } catch (error: any) {
+      await AuditLogger.logBulkToggleRuleStatus(userId, username, Array.isArray(ids) ? ids : [], Boolean(status), 'FAILED', error.message);
       return this.handleError(res, error, "IDPS_CONTROLLER_BULK_STATUS");
     }
   };

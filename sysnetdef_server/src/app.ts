@@ -11,8 +11,10 @@ import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { initializeData } from "#/core/database/data.init";
 
 import authRoutes from "#/interfaces/nbi/http/auth.route";
+import userRoutes from "#/interfaces/nbi/http/user.route";
 import idpsRoutes from "#/interfaces/nbi/http/idpsRules.route";
 import deviceStorageRoutes from "#/interfaces/nbi/http/deviceStorage.route";
+import auditLogRoutes from "#/interfaces/nbi/http/auditLog.route";
 
 import { notificationWS } from "#/interfaces/nbi/ws/notification.ws";
 import { idpsCapture } from "#/interfaces/sbi/stream/idps.stream";
@@ -83,8 +85,11 @@ export const createApp = () => {
 
   // --- ROUTES ---
   app.use("/api/auth", authRoutes);
+  app.use("/api/users", userRoutes);
+  app.use("/api/user", userRoutes);
   app.use("/api/idps", idpsRoutes);
   app.use("/api/device-storage", deviceStorageRoutes);
+  app.use("/api/audit-logs", auditLogRoutes);
 
   app.get("/ping", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });

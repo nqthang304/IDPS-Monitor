@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
-export const idpsRules = sqliteTable('idps_rules', {
+export const idpsRules = sqliteTable('rules', {
   // ID này là Primary Key của Database, để DB tự quản lý việc định danh bản ghi
   id: integer('id').primaryKey({ autoIncrement: true }),
   // Rule ID từ hệ thống (ví dụ: 1001). 

@@ -2,9 +2,15 @@ import { db } from './drizzle';
 import { users } from '../../database/schema/user.model';
 import { idpsRules } from '../../database/schema/idpsRules.model';
 import { systemConfigs } from '../../database/schema/systemConfig.model'; 
+import { systemSettings } from '../../database/schema/systemSettings.model';
+import { auditLogs } from '../../database/schema/auditLogs.model';
+
 import { userSeeds } from '../../database/seed/user.seed';
 import { idpsRuleSeeds } from '../../database/seed/idpsRules.seed';
 import { systemConfigSeeds } from '../../database/seed/systemConfig.seed'; 
+import { systemSettingsSeeds } from '../../database/seed/systemSettings.seed';
+import { auditLogSeeds } from '../../database/seed/auditLogs.seed';
+
 import { eq, sql } from 'drizzle-orm';
 
 export const initializeData = async () => {
@@ -29,6 +35,24 @@ export const initializeData = async () => {
 
       if (!existingConfig || existingConfig.count === 0) {
         db.insert(systemConfigs).values(systemConfigSeeds).run();
+      }
+
+      // 5. Bổ sung: Chèn dữ liệu System Settings
+      const existingSettings = db.select({ count: sql<number>`count(*)` })
+        .from(systemSettings)
+        .get();
+
+      if (!existingSettings || existingSettings.count === 0) {
+        db.insert(systemSettings).values(systemSettingsSeeds).run();
+      }
+
+      // 6. Bổ sung: Chèn dữ liệu Audit Logs
+      const existingAudit = db.select({ count: sql<number>`count(*)` })
+        .from(auditLogs)
+        .get();
+
+      if (!existingAudit || existingAudit.count === 0) {
+        db.insert(auditLogs).values(auditLogSeeds).run();
       }
     }
   } catch (error) {
