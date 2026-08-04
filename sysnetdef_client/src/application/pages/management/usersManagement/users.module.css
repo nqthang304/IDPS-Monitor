@@ -1,0 +1,13 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 64px);
+    padding: 20px;
+    background-color: #f0f2f5;
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+.pageTitleWrapper {
+    margin-bottom: 20px;
+}

@@ -15,6 +15,7 @@ import IdpsAnalyze from "@/application/pages/idps/idpsAnalyze/idpsAnalyze";
 
 // management
 import Logs from "@/application/pages/management/logsManagement/logs";
+import Users from "@/application/pages/management/usersManagement/users";
 
 
 export const router = createBrowserRouter([
@@ -69,7 +70,7 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "users",
-                        element: <div>Nội dung trang list user</div>
+                        element: <Users />
                     }
                 ]
             },

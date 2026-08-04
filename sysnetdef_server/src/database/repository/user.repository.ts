@@ -16,8 +16,9 @@ export class UserRepository {
   }
 
   async updateLastLogin(id: number) {
+    const nowGMT7 = new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().replace('T', ' ').substring(0, 19);
     return db.update(users)
-      .set({ lastLogin: new Date().toISOString() })
+      .set({ lastLogin: nowGMT7 })
       .where(eq(users.id, id))
       .run();
   }

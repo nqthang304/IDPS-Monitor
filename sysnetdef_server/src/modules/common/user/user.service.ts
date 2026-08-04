@@ -33,6 +33,7 @@ export class UserService {
     password: string;
     role?: string;
     notify?: string;
+    notificationEvents?: boolean;
   }) {
     const existingUsername = await this.userRepository.findByUsername(data.username);
     if (existingUsername) {
@@ -46,13 +47,15 @@ export class UserService {
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
+    const notifyVal = data.notify || (data.notificationEvents === false ? 'disabled' : 'enabled');
+
     const newUser = await this.userRepository.createUser({
       fullName: data.fullName,
       email: data.email,
       username: data.username,
       password: hashedPassword,
-      role: data.role || 'admin',
-      notify: data.notify || 'enabled',
+      role: data.role || 'user',
+      notify: notifyVal,
     });
 
     const { password: _, ...userWithoutPassword } = newUser;
@@ -67,6 +70,7 @@ export class UserService {
       password?: string;
       role?: string;
       notify?: string;
+      notificationEvents?: boolean;
     }
   ) {
     const user = await this.userRepository.findById(id);
@@ -89,7 +93,11 @@ export class UserService {
       updateData.password = await bcrypt.hash(data.password, 10);
     }
     if (data.role !== undefined) updateData.role = data.role;
-    if (data.notify !== undefined) updateData.notify = data.notify;
+    if (data.notify !== undefined) {
+      updateData.notify = data.notify;
+    } else if (data.notificationEvents !== undefined) {
+      updateData.notify = data.notificationEvents ? 'enabled' : 'disabled';
+    }
 
     const updatedUser = await this.userRepository.updateUser(id, updateData);
     const { password: _, ...userWithoutPassword } = updatedUser;
