@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Modal, Button, Spin, Row, Col } from 'antd';
+import { Modal, Button, Spin } from 'antd';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import styles from './exportReportModal.module.css';
@@ -9,7 +9,6 @@ import AnalyzePieChart from '@/features/modules/shared/analyze_page/analyzePieCh
 import TopIPTable from '@/features/modules/shared/analyze_page/topIPTable/topIPTable';
 
 import type { AnalyzeTrafficResponse } from '@/features/types/idps.type';
-import type { AnalyzeDDoSTrafficResponse } from '@/features/types/antiddos.type';
 import type { ColoredTopIPEntry } from '@/application/pages/idps/idpsAnalyze/idpsAnalyze';
 import { bitFormatter, byteFormatter } from '@/utils/formatter.utils';
 import logo from '@/assets/Logo/ACS_Logo.svg';
@@ -17,7 +16,7 @@ import logo from '@/assets/Logo/ACS_Logo.svg';
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    data: AnalyzeTrafficResponse | AnalyzeDDoSTrafficResponse | null;
+    data: AnalyzeTrafficResponse | null;
     startTime: string;
     endTime: string;
     moduleType?: 'ddos' | 'idps';
@@ -42,11 +41,6 @@ const ExportReportModal: React.FC<Props> = ({ isOpen, onClose, data, startTime, 
         if (!isOpen) setIsChartVisible(false);
     }, [isOpen]);
 
-    // Type Guard kiểm tra cấu hình dữ liệu thuộc về module IDPS
-    const isIDPSData = (raw: any): raw is AnalyzeTrafficResponse => {
-        return raw && 'protocolBreakdown' in raw;
-    };
-
     // Hàm chuyển đổi dữ liệu thô từ API thành mảng hàng động dựa theo Module hiện tại
     const getSummaryRowsData = (): SummaryRowData[] => {
         if (!data) return [];
@@ -57,47 +51,26 @@ const ExportReportModal: React.FC<Props> = ({ isOpen, onClose, data, startTime, 
                 totalBytes: data.totalProcessedBytes ?? 0,
                 avgBitrate: data.avgProcessedBitrate ?? 0,
                 peakBitrate: data.peakProcessedBitrate ?? 0,
+            },
+            {
+                label: 'Normal',
+                totalBytes: data.stats?.normal?.totalBytes ?? 0,
+                avgBitrate: data.stats?.normal?.avgBitrate ?? 0,
+                peakBitrate: data.stats?.normal?.peakBitrate ?? 0,
+            },
+            {
+                label: 'Alert',
+                totalBytes: data.stats?.alert?.totalBytes ?? 0,
+                avgBitrate: data.stats?.alert?.avgBitrate ?? 0,
+                peakBitrate: data.stats?.alert?.peakBitrate ?? 0,
+            },
+            {
+                label: 'Drop',
+                totalBytes: data.stats?.drop?.totalBytes ?? 0,
+                avgBitrate: data.stats?.drop?.avgBitrate ?? 0,
+                peakBitrate: data.stats?.drop?.peakBitrate ?? 0,
             }
         ];
-
-        if (isDDoS || !isIDPSData(data)) {
-            const ddosData = data as AnalyzeDDoSTrafficResponse;
-            rows.push(
-                {
-                    label: 'Received',
-                    totalBytes: ddosData.stats?.received?.totalBytes ?? 0,
-                    avgBitrate: ddosData.stats?.received?.avgBitrate ?? 0,
-                    peakBitrate: ddosData.stats?.received?.peakBitrate ?? 0,
-                },
-                {
-                    label: 'Dropped',
-                    totalBytes: ddosData.stats?.dropped?.totalBytes ?? 0,
-                    avgBitrate: ddosData.stats?.dropped?.avgBitrate ?? 0,
-                    peakBitrate: ddosData.stats?.dropped?.peakBitrate ?? 0,
-                }
-            );
-        } else {
-            rows.push(
-                {
-                    label: 'Normal',
-                    totalBytes: data.stats?.normal?.totalBytes ?? 0,
-                    avgBitrate: data.stats?.normal?.avgBitrate ?? 0,
-                    peakBitrate: data.stats?.normal?.peakBitrate ?? 0,
-                },
-                {
-                    label: 'Alert',
-                    totalBytes: data.stats?.alert?.totalBytes ?? 0,
-                    avgBitrate: data.stats?.alert?.avgBitrate ?? 0,
-                    peakBitrate: data.stats?.alert?.peakBitrate ?? 0,
-                },
-                {
-                    label: 'Drop',
-                    totalBytes: data.stats?.drop?.totalBytes ?? 0,
-                    avgBitrate: data.stats?.drop?.avgBitrate ?? 0,
-                    peakBitrate: data.stats?.drop?.peakBitrate ?? 0,
-                }
-            );
-        }
 
         return rows;
     };
@@ -242,53 +215,18 @@ const ExportReportModal: React.FC<Props> = ({ isOpen, onClose, data, startTime, 
                 {/* 6. Trends Section */}
                 <div id="pdf-pie-chart" className={styles.pdfSection}>
                     <div className={styles.chartSection}>
-                        <h3>Traffic trends</h3>
-
-                        {isDDoS ? (
-                            // Layout dành cho module DDoS: Chia làm 2 cột nằm cạnh nhau
-                            <Row gutter={16}>
-                                <Col span={12}>
-                                    <div className={styles.pieSubTitle}>Protocol Distribution</div>
-                                    <div className={styles.pieWrapperSplit}>
-                                        {isChartVisible ? (
-                                            <AnalyzePieChart
-                                                summaryByProtocol={(data as AnalyzeDDoSTrafficResponse)?.protocol || {}}
-                                                moduleType={moduleType}
-                                                isExport={true}
-                                            />
-                                        ) : (
-                                            <div className={styles.chartPlaceholder}><Spin /></div>
-                                        )}
-                                    </div>
-                                </Col>
-                                <Col span={12}>
-                                    <div className={styles.pieSubTitle}>Attack Distribution</div>
-                                    <div className={styles.pieWrapperSplit}>
-                                        {isChartVisible ? (
-                                            <AnalyzePieChart
-                                                summaryByProtocol={(data as AnalyzeDDoSTrafficResponse)?.attack || {}}
-                                                moduleType={moduleType}
-                                                isExport={true}
-                                            />
-                                        ) : (
-                                            <div className={styles.chartPlaceholder}><Spin /></div>
-                                        )}
-                                    </div>
-                                </Col>
-                            </Row>
-                        ) : (
-                            <div className={styles.pieWrapper}>
-                                {isChartVisible ? (
-                                    <AnalyzePieChart
-                                        summaryByProtocol={(data as AnalyzeTrafficResponse)?.protocolBreakdown || {}}
-                                        moduleType={moduleType}
-                                        isExport={true}
-                                    />
-                                ) : (
-                                    <div className={styles.chartPlaceholder}><Spin /></div>
-                                )}
-                            </div>
-                        )}
+                        <h3>Traffic trends</h3> (
+                        <div className={styles.pieWrapper}>
+                            {isChartVisible ? (
+                                <AnalyzePieChart
+                                    summaryByProtocol={(data as AnalyzeTrafficResponse)?.protocolBreakdown || {}}
+                                    moduleType={moduleType}
+                                    isExport={true}
+                                />
+                            ) : (
+                                <div className={styles.chartPlaceholder}><Spin /></div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

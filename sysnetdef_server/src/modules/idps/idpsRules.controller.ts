@@ -155,6 +155,11 @@ export class IdpsRuleController {
 
       await AuditLogger.logCreateRule(userId, username, req.body.ruleId, 'SUCCESS');
 
+      emailNotificationService.notifySubscribedUsers(
+        "New IDPS Rule Added",
+        `User <b>${username}</b> added a new Rule (SID: <b>${req.body.ruleId || 'N/A'}</b>).`
+      );
+
       return res.status(201).json({
         success: true,
         message: result.message || "New rule added successfully.",
@@ -185,6 +190,11 @@ export class IdpsRuleController {
       logger.success("IDPS_CONTROLLER", `Rule ${ruleId} updated`);
 
       await AuditLogger.logUpdateRule(userId, username, ruleId, 'SUCCESS');
+
+      emailNotificationService.notifySubscribedUsers(
+        "IDPS Rule Modified",
+        `User <b>${username}</b> modified Rule (SID: <b>${ruleId}</b>).`
+      );
 
       return res.status(200).json({
         success: true,
@@ -226,6 +236,11 @@ export class IdpsRuleController {
 
       await AuditLogger.logDeleteRules(userId, username, targetIds, 'SUCCESS');
 
+      emailNotificationService.notifySubscribedUsers(
+        "IDPS Rule(s) Deleted",
+        `User <b>${username}</b> deleted ${targetIds.length} Rule(s) (SID: <b>${targetIds.join(', ')}</b>).`
+      );
+
       return res.status(200).json({
         success: true,
         message: "Data deletion successful."
@@ -264,6 +279,11 @@ export class IdpsRuleController {
       logger.success("IDPS_CONTROLLER", `Bulk updated rules to status: ${status}`);
 
       await AuditLogger.logBulkToggleRuleStatus(userId, username, ids, status, 'SUCCESS');
+
+      emailNotificationService.notifySubscribedUsers(
+        "IDPS Rule Status Toggled",
+        `User <b>${username}</b> set status of ${ids.length} Rule(s) to <b>${status ? 'ENABLED' : 'DISABLED'}</b>.`
+      );
 
       return res.status(200).json({
         success: true,

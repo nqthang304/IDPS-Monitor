@@ -62,13 +62,16 @@ const IdpsDashboard: React.FC = () => {
   const handleIdpsUpdate = async (active: boolean, mode: string) => {
     if (useLockStore.getState().isLocked) return;
 
-    // Cập nhật ngay vào store
+    // Cập nhật ngay vào local state và store (Optimistic Update)
+    setIdpsData({ active, mode: mode as IdpsMode });
     useIdpsStore.getState().setStatus(active, mode as IdpsMode);
 
     try {
       await idpsApi.updateIdpsStatus({ active, mode: mode as IdpsMode });
-      fetchStatus();
+      // Không gọi fetchStatus() ngay tại đây vì WebSocket event 'FORCE_REFRESH_DATA'
+      // sẽ tự động gọi fetchStatus() sau khi Backend đã cập nhật Database xong!
     } catch (error: any) {
+      // Chỉ fetchStatus() lại khi API có lỗi để rollback về trạng thái cũ
       fetchStatus();
     }
   };

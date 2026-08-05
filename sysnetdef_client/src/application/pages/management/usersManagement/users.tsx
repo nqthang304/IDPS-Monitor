@@ -40,6 +40,12 @@ const Users: React.FC = () => {
   };
 
   const handleNewUserBtn = () => {
+    if (users.length >= 6) {
+      message.error(
+        "Maximum number of users reached (6 users max), please delete a user to add a new one"
+      );
+      return;
+    }
     setEditingUser(null);
     setAddUserModal(true);
   };
