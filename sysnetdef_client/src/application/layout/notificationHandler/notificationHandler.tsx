@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { App, Button } from 'antd';
 
 const ActionUIConfig: Record<string, { route: string; label: string }> = {
-  IDPS_CONDITION_UPDATE: { route: '/dashboard/idps', label: 'IDPS Status/Mode' },
-  IDPS_RULES_UPDATE: { route: '/idps/rules', label: 'IDPS Rules' },
+  IDPS_CONDITION_UPDATE: { route: '/dashboard', label: 'IDPS Status/Mode' },
+  IDPS_RULES_UPDATE: { route: '/rules', label: 'IDPS Rules' },
   IPSEC_PROFILE_UPDATE: { route: '/ipsec/list-ipsec-profile', label: 'IPSec Profiles' },
 };
 

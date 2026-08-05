@@ -26,6 +26,11 @@ export class UserService {
     notify?: string;
     notificationEvents?: boolean;
   }) {
+    const allUsers = await this.userRepository.getAllUsers();
+    if (allUsers.length >= 6) {
+      throw new Error("Maximum number of users reached (6 users max). Please delete a user to add a new one.");
+    }
+
     const existingUsername = await this.userRepository.findByUsername(data.username);
     if (existingUsername) {
       throw new Error("Username already exists");
