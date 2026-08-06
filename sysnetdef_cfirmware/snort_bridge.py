@@ -12,19 +12,23 @@ BASE_LOG_DIR = "/home/idps/server/logs/Log_IDPS"
 def clean_timestamp_gmt7(raw_ts):
     """
     Chuyển đổi giờ từ Snort (UTC) sang Giờ Việt Nam (GMT+7 Hanoi)
-    VD: 18:59:25 UTC -> 01:59:25 GMT+7
+    VD: "08/06-02:31:21.882018" -> "2026-08-06 09:31:21"
     """
     try:
         if "-" in raw_ts:
-            time_str = raw_ts.split("-")[1].split(".")[0] # "18:59:25"
-            dt = datetime.strptime(time_str, "%H:%M:%S")
+            date_part, time_with_ms = raw_ts.split("-")
+            time_str = time_with_ms.split(".")[0] # "02:31:21"
+            curr_year = datetime.now().year
+            
+            full_str = f"{curr_year}/{date_part} {time_str}"
+            dt = datetime.strptime(full_str, "%Y/%m/%d %H:%M:%S")
             dt_gmt7 = dt + timedelta(hours=7)
-            return dt_gmt7.strftime("%H:%M:%S")
+            return dt_gmt7.strftime("%Y-%m-%d %H:%M:%S")
     except Exception as e:
         print(f"[Timestamp Error] {e}")
     
     # Dự phòng: Lấy thẳng giờ hệ thống hiện tại
-    return time.strftime("%H:%M:%S")
+    return time.strftime("%Y-%m-%d %H:%M:%S")
 
 def parse_snort_alert(line):
     pattern = r'(\d{2}/\d{2}-\d{2}:\d{2}:\d{2}\.\d+)\s+\[\*\*\]\s+\[\d+:(\d+):\d+\]\s+(.*?)\s+\[\*\*\]\s+\[Priority:\s+(\d+)\]\s+\{(\w+)\}\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::(\d+))?\s+->\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::(\d+))?'
@@ -32,20 +36,35 @@ def parse_snort_alert(line):
     if match:
         raw_timestamp, sid, rule_msg, priority, protocol, src_ip, src_port, dst_ip, dst_port = match.groups()
         
-        # Tự động cộng +7 Giờ (Múi giờ Hà Nội GMT+7)
+        # Tự động cộng +7 Giờ (Múi giờ Hà Nội GMT+7) dạng YYYY-MM-DD HH:MM:SS
         timestamp = clean_timestamp_gmt7(raw_timestamp)
 
         src_port = src_port if src_port else "0"
         dst_port = dst_port if dst_port else "0"
         prio_val = int(priority)
         
-        action = "Drop" if "Drop" in rule_msg or prio_val == 0 else "Alert"
-        is_malware = "1" if prio_val == 0 or "Malware" in rule_msg or "Drop" in action else "0"
-        rule_clean = rule_msg.replace(" ", "_")
+        # Action: "Drop" nếu tên luật chứa "drop", còn lại "Alert"
+        action = "Drop" if "drop" in rule_msg.lower() else "Alert"
         
-        formatted_data = f"{timestamp}|{src_ip}|{dst_ip}|{src_port}|{dst_port}|{action}|{rule_clean}|{prio_val}|{protocol}|{is_malware}|1|64"
+        # Malware: Chỉ gán "1" nếu tên luật thực sự chứa từ khóa độc hại
+        malware_keywords = ["malware", "trojan", "virus", "backdoor", "botnet", "worm", "ransomware", "spyware", "triton", "trisis", "hatman"]
+        rule_lower = rule_msg.lower()
+        is_malware = "1" if any(kw in rule_lower for kw in malware_keywords) else "0"
+        
+        # Severity theo C (gui.c): Normal=1, Alert=2, Drop/Malware=3
+        if action == "Normal":
+            severity = 1
+        elif is_malware == "1" or action == "Drop":
+            severity = 3
+        else:
+            severity = 2
+            
+        formatted_data = f"{timestamp}|{src_ip}|{dst_ip}|{src_port}|{dst_port}|{action}|{rule_msg}|{severity}|{protocol}|{is_malware}|1|64"
         return formatted_data, action
     return None, None
+
+# Khởi tạo Session Timestamp khi Bridge chạy (khớp với init_idps_session_log trong gui.c)
+SESSION_TIMESTAMP = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 def write_to_log_file(formatted_data, action):
     try:
@@ -60,8 +79,7 @@ def write_to_log_file(formatted_data, action):
         if not os.path.exists(target_dir):
             os.makedirs(target_dir, exist_ok=True)
 
-        today = time.strftime("%Y-%m-%d")
-        log_file_path = os.path.join(target_dir, f"{today}.log")
+        log_file_path = os.path.join(target_dir, f"{SESSION_TIMESTAMP}.log")
         with open(log_file_path, "a") as f:
             f.write(formatted_data + "\n")
     except Exception as e:

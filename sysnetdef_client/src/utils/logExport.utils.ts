@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { message } from 'antd';
 
 export interface LogFileData {
   id: string;
@@ -37,13 +38,9 @@ export const parseIdpsLogToExcel = (textContent: string) => {
       ];
     });
 
-  return [headers, ...rows];
+  return { headers, rows };
 };
 
-/**
- * Hàm Core xử lý Export chung
- * Thêm tham số logType để xác định hàm parser cần dùng
- */
 export const processLogExport = async (
   selectedRows: LogFileData[], 
   format: string,
@@ -63,38 +60,52 @@ export const processLogExport = async (
     if (format.includes('xlsx')) {
       extension = '.xlsx';
       
-      // Lựa chọn hàm parser dựa trên logType
-      let excelData;
+      let headers: string[] = [];
+      let rows: any[][] = [];
+
       switch (logType) {
-        case 'IDPS':
-          excelData = parseIdpsLogToExcel(textContent);
+        case 'IDPS': {
+          const parsed = parseIdpsLogToExcel(textContent);
+          headers = parsed.headers;
+          rows = parsed.rows;
           break;
-        case 'DDOS':
-          // excelData = parseDdosLogToExcel(textContent); // Ví dụ cho hàm sau này
-          excelData = [[textContent]];
-          break;
-        case 'IPSEC':
-          // excelData = parseIpsecLogToExcel(textContent); // Ví dụ cho hàm sau này
-          excelData = [[textContent]];
-          break;
-        case 'DEVICE':
-          // excelData = parseDeviceLogToExcel(textContent); // Ví dụ cho hàm sau này
-          excelData = [[textContent]];
-          break;
-        default:
-          excelData = [[textContent]];
+        }
+        default: {
+          headers = ["Log Content"];
+          rows = textContent.split('\n').filter(line => line.trim() !== '').map(line => [line]);
+        }
       }
 
-      const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-      
-      // Định dạng độ rộng cột (Cấu hình theo IDPS)
-      if (logType === 'IDPS') {
-        worksheet['!cols'] = [{ wch: 20 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 25 }, { wch: 10 }, { wch: 25 }, { wch: 10 }, { wch: 10 }, { wch: 30 }];
+      const totalRows = rows.length;
+      const MAX_EXCEL_ROWS = 100000; // Giới hạn an toàn 100,000 dòng cho Client JS Excel Export
+
+      if (totalRows > MAX_EXCEL_ROWS) {
+        message.warning(
+          `File log "${file.fileName}" có ${totalRows.toLocaleString()} dòng quá lớn đối với Excel. Đã giới hạn xuất ${MAX_EXCEL_ROWS.toLocaleString()} dòng đầu tiên. Hãy xuất dạng .txt hoặc .zip-txt để lấy toàn bộ log!`,
+          7
+        );
+        rows = rows.slice(0, MAX_EXCEL_ROWS);
       }
-      
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Logs");
-      finalContent = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+      try {
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows], { dense: true } as any);
+        
+        if (logType === 'IDPS') {
+          worksheet['!cols'] = [
+            { wch: 20 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, 
+            { wch: 25 }, { wch: 10 }, { wch: 25 }, { wch: 10 }, 
+            { wch: 10 }, { wch: 30 }
+          ];
+        }
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Logs");
+        finalContent = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      } catch (err) {
+        console.error("XLSX export error:", err);
+        message.error(`Không thể chuyển đổi file "${file.fileName}" sang Excel do dung lượng quá lớn. Vui lòng xuất dạng .txt hoặc .zip-txt!`);
+        throw err;
+      }
     }
 
     const fileName = `${file.fileName.split('.')[0]}${extension}`;
